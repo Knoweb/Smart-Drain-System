@@ -1,0 +1,215 @@
+/* Page.module.css — shared styles for all page components */
+
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* ── Stat cards grid (Dashboard overview) ─────────────────────────── */
+.statGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-4);
+}
+
+.statCard {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.statValue {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.statLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Status card accents */
+.card--primary {
+    border-top: 3px solid var(--color-primary);
+}
+
+.card--operational {
+    border-top: 3px solid var(--color-operational);
+}
+
+.card--warning {
+    border-top: 3px solid var(--color-warning);
+}
+
+.card--critical {
+    border-top: 3px solid var(--color-critical);
+}
+
+.card--operational .statValue {
+    color: var(--color-operational);
+}
+
+.card--warning .statValue {
+    color: var(--color-warning);
+}
+
+.card--critical .statValue {
+    color: var(--color-critical);
+}
+
+/* ── Placeholder (used until real components are built) ────────────── */
+.placeholder {
+    background: var(--surface-card);
+    border: 1px dashed var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.placeholder span {
+    font-size: 3rem;
+}
+
+/* ── Generic Grid (Sensors page etc) ── */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-6);
+}
+
+/* ── Error banner ──────────────────────────────────────────────────── */
+.errorBanner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    color: #fca5a5;
+    font-size: 0.875rem;
+}
+
+/* ── Drain table ───────────────────────────────────────────────────── */
+.drainTable {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.tableTitle {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--text-primary);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.table thead th {
+    padding: var(--space-3) var(--space-6);
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--surface-border);
+    transition: background 0.12s;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background: var(--surface-card-hover);
+}
+
+.table tbody td {
+    padding: var(--space-3) var(--space-6);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.table tbody td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* ── Status pills ──────────────────────────────────────────────────── */
+.statusPill {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+}
+
+.pill--operational {
+    color: var(--color-operational);
+    border-color: var(--color-operational);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.pill--warning {
+    color: var(--color-warning);
+    border-color: var(--color-warning);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.pill--critical {
+    color: var(--color-critical);
+    border-color: var(--color-critical);
+    background: rgba(239, 68, 68, 0.08);
+}
