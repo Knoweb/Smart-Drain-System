@@ -1,0 +1,76 @@
+/* DrainPopup.module.css */
+
+.popup {
+    font-family: var(--font-body);
+    min-width: 220px;
+    color: #1e293b;
+    /* Dark text — Leaflet popups have white background */
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    gap: 8px;
+}
+
+.name {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+    border-radius: 999px;
+    padding: 2px 8px;
+    text-transform: uppercase;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.metric {
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.metricLabel {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.metricValue {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.loading {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-align: center;
+    padding: 8px 0;
+}
+
+.timestamp {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
