@@ -1,0 +1,77 @@
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: flex-end;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.filterGroup label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.select {
+    background: var(--surface-bg);
+    border: 1px solid var(--surface-border);
+    color: var(--text-primary);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    min-width: 180px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.select:focus {
+    border-color: var(--color-primary);
+}
+
+.actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-left: auto;
+}
+
+.btnSecondary {
+    background: transparent;
+    border: 1px solid var(--surface-border);
+    color: var(--text-primary);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.btnSecondary:hover:not(:disabled) {
+    background: var(--surface-card-hover);
+    border-color: var(--text-muted);
+}
+
+.btnSecondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loading, .empty {
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--text-muted);
+}
