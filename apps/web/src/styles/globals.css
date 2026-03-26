@@ -23,6 +23,7 @@
   --surface-card-hover: #21263a;
   --surface-border: #2a2f45;      /* Subtle borders */
   --surface-sidebar: #13161f;     /* Sidebar background */
+  --topbar-bg: rgba(26, 29, 39, 0.85);
 
   /* --- Text --- */
   --text-primary: #f1f5f9;        /* Main headings */
@@ -96,3 +97,18 @@ a {
 ::-webkit-scrollbar-track { background: var(--surface-bg); }
 ::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+html.light {
+  /* --- Surface Colors (light theme) --- */
+  --surface-bg: #f8fafc;          /* Page background */
+  --surface-card: #ffffff;        /* Card / panel background */
+  --surface-card-hover: #f1f5f9;
+  --surface-border: #e2e8f0;      /* Subtle borders */
+  --surface-sidebar: #f8fafc;     /* Sidebar background */
+  --topbar-bg: rgba(255, 255, 255, 0.85);
+
+  /* --- Text --- */
+  --text-primary: #0f172a;        /* Main headings */
+  --text-secondary: #475569;      /* Subtext, labels */
+  --text-muted: #94a3b8;
+}

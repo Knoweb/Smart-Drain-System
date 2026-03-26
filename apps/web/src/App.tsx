@@ -25,10 +25,12 @@ import SensorsPage from '@/pages/SensorsPage'
 import AlertsPage from '@/pages/AlertsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import SettingsPage from '@/pages/SettingsPage'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 export default function App() {
     return (
-        <BrowserRouter>
+        <ThemeProvider>
+            <BrowserRouter>
             <Routes>
                 {/* All dashboard routes share the layout (sidebar + topbar) */}
                 <Route element={<DashboardLayout />}>
@@ -44,5 +46,6 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
+        </ThemeProvider>
     )
 }

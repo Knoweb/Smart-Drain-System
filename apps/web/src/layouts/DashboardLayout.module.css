@@ -117,7 +117,7 @@
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(26, 29, 39, 0.85);
+    background: var(--topbar-bg, rgba(26, 29, 39, 0.85));
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--surface-border);
     padding: 0 var(--space-6);

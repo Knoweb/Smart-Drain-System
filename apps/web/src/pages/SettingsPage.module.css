@@ -1,0 +1,120 @@
+.settingsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.settingCard {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.settingInfo {
+    flex: 1;
+}
+
+.settingTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.settingDesc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.settingAction {
+    flex-shrink: 0;
+}
+
+/* Custom CSS Toggle Switch with Label */
+.toggleWrapper {
+    cursor: pointer;
+    display: inline-block;
+}
+
+.toggleInput {
+    display: none;
+}
+
+.toggleTrack {
+    background: var(--surface-bg);
+    border: 1px solid var(--surface-border);
+    border-radius: 999px;
+    padding: var(--space-2) var(--space-3) var(--space-2) 48px;
+    position: relative;
+    transition: all 0.2s;
+    user-select: none;
+    min-width: 110px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.toggleInput:checked + .toggleTrack {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.toggleThumb {
+    position: absolute;
+    top: 50%;
+    left: 4px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: var(--text-primary);
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggleInput:checked + .toggleTrack .toggleThumb {
+    transform: translate(calc(100% + 36px), -50%);
+    background: #ffffff;
+}
+
+.toggleLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color 0.1s;
+    white-space: nowrap;
+}
+
+.toggleInput:checked + .toggleTrack .toggleLabel {
+    color: #ffffff;
+    transform: translateX(-36px);
+}
+
+.btnSecondary {
+    background: transparent;
+    border: 1px solid var(--surface-border);
+    color: var(--text-primary);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btnSecondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .settingCard {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
