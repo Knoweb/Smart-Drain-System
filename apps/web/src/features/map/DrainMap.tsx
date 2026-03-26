@@ -21,9 +21,12 @@
  * 5. Tooltip: Small label shown on hover (before clicking).
  */
 
-import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip } from 'react-leaflet'
+import { Popup, Tooltip } from 'react-leaflet'
+import { CircleMarker } from 'react-leaflet/CircleMarker'
+import { MapContainer } from 'react-leaflet/MapContainer'
+import { TileLayer } from 'react-leaflet/TileLayer'
 import { useDrains } from '@/hooks/useDrains'
-import { DrainPopup } from './DrainPopup'
+import { DrainPopup, DevicePopup } from './DrainPopup'
 import { MAP_CENTER, MAP_DEFAULT_ZOOM, STATUS_COLOR_MAP } from '@/config/constants'
 import styles from './DrainMap.module.css'
 
@@ -65,7 +68,7 @@ export function DrainMap() {
                 {drains.length} drain{drains.length !== 1 ? 's' : ''} monitored
             </div>
 
-            {/* ── The actual Leaflet map ── */}
+        {/* ── The actual Leaflet map ── */}
             <MapContainer
                 center={MAP_CENTER}
                 zoom={MAP_DEFAULT_ZOOM}
@@ -82,27 +85,109 @@ export function DrainMap() {
                     const color = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
 
                     return (
+                        <div key={drain.id}>
+                            <CircleMarker
+                                center={[drain.latitude, drain.longitude]}
+                                radius={14}
+                                pathOptions={{
+                                    fillColor: color,
+                                    fillOpacity: 0.85,
+                                    color: '#ffffff',     // white border ring
+                                    weight: 2,
+                                }}
+                            >
+                                {/* Tooltip: shown on hover */}
+                                <Tooltip direction="top" offset={[0, -10]}>
+                                    <strong>{drain.name}</strong>
+                                    <br />
+                                    <span style={{ color }}>{drain.status}</span>
+                                </Tooltip>
+
+                                {/* Popup: shown on click */}
+                                <Popup minWidth={240} maxWidth={280}>
+                                    <DrainPopup drain={drain} />
+                                </Popup>
+                            </CircleMarker>
+
+                        </div>
+                    )
+                })}
+            </MapContainer>
+        </div>
+    )
+}
+
+export function DrainDetailMap({ drain }: { drain: import('@/types').Drain }) {
+    if (!drain.iot_devices || drain.iot_devices.length === 0) {
+        return (
+            <div className={styles.subMapWrapper} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <h3>{drain.name}</h3>
+                <p>No IoT devices installed at this location.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className={styles.subMapWrapper}>
+            <div className={styles.subMapHeader}>
+                <h3>{drain.name} — IoT Devices</h3>
+                <span style={{
+                    padding: '0.25rem 0.75rem', 
+                    borderRadius: '999px', 
+                    fontSize: '0.75rem', 
+                    fontWeight: 600, 
+                    border: `1px solid ${STATUS_COLOR_MAP[drain.status]}`, 
+                    color: STATUS_COLOR_MAP[drain.status]
+                }}>
+                    {drain.status}
+                </span>
+            </div>
+            
+            <MapContainer
+                center={[drain.latitude, drain.longitude]}
+                zoom={18} // High zoom level to see devices
+                className={styles.subMap}
+                scrollWheelZoom={false}
+            >
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+
+                {/* Parent Drain Area Marker (faded / large) */}
+                <CircleMarker
+                    center={[drain.latitude, drain.longitude]}
+                    radius={30}
+                    pathOptions={{
+                        fillColor: STATUS_COLOR_MAP[drain.status] ?? '#94a3b8',
+                        fillOpacity: 0.1,
+                        color: STATUS_COLOR_MAP[drain.status] ?? '#94a3b8',
+                        weight: 1,
+                        dashArray: '4'
+                    }}
+                >
+                    <Tooltip direction="top" offset={[0, -10]}>Drain Central Zone</Tooltip>
+                </CircleMarker>
+
+                {/* Sub-Devices markers */}
+                {drain.iot_devices.map(device => {
+                    const devColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
+                    return (
                         <CircleMarker
-                            key={drain.id}
-                            center={[drain.latitude, drain.longitude]}
-                            radius={14}
+                            key={device.id}
+                            center={[device.latitude, device.longitude]}
+                            radius={8}
                             pathOptions={{
-                                fillColor: color,
-                                fillOpacity: 0.85,
-                                color: '#ffffff',     // white border ring
+                                fillColor: devColor,
+                                fillOpacity: 1,
+                                color: '#ffffff',
                                 weight: 2,
                             }}
                         >
-                            {/* Tooltip: shown on hover */}
-                            <Tooltip direction="top" offset={[0, -10]}>
-                                <strong>{drain.name}</strong>
-                                <br />
-                                <span style={{ color }}>{drain.status}</span>
+                            <Tooltip direction="top" offset={[0, -6]}>
+                                <strong>{device.name}</strong>
                             </Tooltip>
-
-                            {/* Popup: shown on click — contains our live-data card */}
                             <Popup minWidth={240} maxWidth={280}>
-                                <DrainPopup drain={drain} />
+                                <DevicePopup device={device} drainName={drain.name} />
                             </Popup>
                         </CircleMarker>
                     )

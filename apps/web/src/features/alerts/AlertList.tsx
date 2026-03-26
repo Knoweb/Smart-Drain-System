@@ -66,9 +66,9 @@ function AlertCard({ alert, onResolve }: { alert: Alert; onResolve: () => void }
                 : styles.default
 
     const icon = isHighWater ? '🌊' : isLowBattery ? '🔋' : '⚠️'
-    // Remember we joined the drains table, so the name is accessible inside drains object
-    // @ts-expect-error Types definition handles this correctly but TS sometimes complains about joins
-    const drainName = alert.drains?.name ?? 'Unknown Drain Location'
+    // Extract linked device and drain details
+    const deviceName = alert.iot_devices?.name ?? 'Unknown Device'
+    const drainName = alert.iot_devices?.drains?.name ?? 'Unknown Drain Location'
 
     return (
         <div className={`${styles.card} ${themeClass}`}>
@@ -76,7 +76,7 @@ function AlertCard({ alert, onResolve }: { alert: Alert; onResolve: () => void }
 
             <div className={styles.cardContent}>
                 <div className={styles.cardHeader}>
-                    <h4 className={styles.drainName}>{drainName}</h4>
+                    <h4 className={styles.drainName}>{drainName} &rsaquo; {deviceName}</h4>
                     <span className={styles.timestamp}>
                         {new Date(alert.created_at).toLocaleString()}
                     </span>

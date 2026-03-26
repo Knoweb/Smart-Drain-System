@@ -22,13 +22,13 @@ interface UseLatestReadingResult {
     error: string | null
 }
 
-export function useLatestReading(drainId: string | null): UseLatestReadingResult {
+export function useLatestReading(deviceId: string | null): UseLatestReadingResult {
     const [reading, setReading] = useState<SensorReading | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (!drainId) {
+        if (!deviceId) {
             setReading(null)
             return
         }
@@ -40,7 +40,7 @@ export function useLatestReading(drainId: string | null): UseLatestReadingResult
         supabase
             .from('sensor_readings')
             .select('*')
-            .eq('drain_id', drainId)
+            .eq('device_id', deviceId)
             .order('recorded_at', { ascending: false })
             .limit(1)
             .single()
@@ -56,16 +56,16 @@ export function useLatestReading(drainId: string | null): UseLatestReadingResult
             })
 
         // ── 2. Realtime subscription: listen for new readings ─────────────────
-        // When a new row is INSERTed for this drain, update the displayed reading.
+        // When a new row is INSERTed for this device, update the displayed reading.
         const channel = supabase
-            .channel(`readings-${drainId}`)
+            .channel(`readings-${deviceId}`)
             .on(
                 'postgres_changes',
                 {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'sensor_readings',
-                    filter: `drain_id=eq.${drainId}`,
+                    filter: `device_id=eq.${deviceId}`,
                 },
                 (payload) => {
                     if (!cancelled) {
@@ -79,7 +79,7 @@ export function useLatestReading(drainId: string | null): UseLatestReadingResult
             cancelled = true
             supabase.removeChannel(channel)
         }
-    }, [drainId])
+    }, [deviceId])
 
     return { reading, loading, error }
 }

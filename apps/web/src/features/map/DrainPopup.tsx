@@ -12,17 +12,13 @@
  */
 
 import { useLatestReading } from '@/hooks/useLatestReading'
-import type { Drain } from '@/types'
+import type { Drain, IoTDevice } from '@/types'
 import { STATUS_COLOR_MAP } from '@/config/constants'
 import styles from './DrainPopup.module.css'
 
-interface Props {
-    drain: Drain
-}
-
-export function DrainPopup({ drain }: Props) {
-    const { reading, loading } = useLatestReading(drain.id)
+export function DrainPopup({ drain }: { drain: Drain }) {
     const statusColor = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
+    const devices = drain.iot_devices || []
 
     return (
         <div className={styles.popup}>
@@ -31,6 +27,41 @@ export function DrainPopup({ drain }: Props) {
                 <span className={styles.name}>{drain.name}</span>
                 <span className={styles.badge} style={{ color: statusColor, borderColor: statusColor }}>
                     {drain.status}
+                </span>
+            </div>
+
+            <div style={{ padding: '0.5rem 0' }}>
+                <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                    <strong>{devices.length}</strong> IoT Sub-Devices
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {devices.map(d => (
+                        <div key={d.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                            <span>{d.name}</span>
+                            <span style={{ color: STATUS_COLOR_MAP[d.status] }}>{d.status}</span>
+                        </div>
+                    ))}
+                    {devices.length === 0 && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No devices installed.</span>}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export function DevicePopup({ device, drainName }: { device: IoTDevice; drainName: string }) {
+    const { reading, loading } = useLatestReading(device.id)
+    const statusColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
+
+    return (
+        <div className={styles.popup}>
+            {/* ── Header ── */}
+            <div className={styles.header}>
+                <div>
+                    <div className={styles.name}>{device.name}</div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>📍 {drainName}</div>
+                </div>
+                <span className={styles.badge} style={{ color: statusColor, borderColor: statusColor }}>
+                    {device.status}
                 </span>
             </div>
 

@@ -8,9 +8,9 @@ import pageStyles from './Page.module.css'
 export default function ReportsPage() {
     const { drains } = useDrains()
     const [timeRange, setTimeRange] = useState<TimeRange>('24h')
-    const [selectedDrain, setSelectedDrain] = useState<string>('all')
+    const [selectedDevice, setSelectedDevice] = useState<string>('all')
 
-    const { readings, loading, error } = useHistoricalReadings(timeRange, selectedDrain)
+    const { readings, loading, error } = useHistoricalReadings(timeRange, selectedDevice)
 
     const handleExportCSV = () => {
         exportToCSV(readings, `drain_report_${new Date().toISOString().split('T')[0]}.csv`)
@@ -38,15 +38,19 @@ export default function ReportsPage() {
                 </div>
                 
                 <div className={styles.filterGroup}>
-                    <label>Drain Location</label>
+                    <label>IoT Device</label>
                     <select 
-                        value={selectedDrain} 
-                        onChange={(e) => setSelectedDrain(e.target.value)}
+                        value={selectedDevice} 
+                        onChange={(e) => setSelectedDevice(e.target.value)}
                         className={styles.select}
                     >
-                        <option value="all">All Drains</option>
+                        <option value="all">All Devices</option>
                         {drains.map(d => (
-                            <option key={d.id} value={d.id}>{d.name}</option>
+                            <optgroup key={d.id} label={d.name}>
+                                {(d.iot_devices || []).map(device => (
+                                    <option key={device.id} value={device.id}>{device.name}</option>
+                                ))}
+                            </optgroup>
                         ))}
                     </select>
                 </div>
@@ -88,7 +92,8 @@ export default function ReportsPage() {
                         <thead>
                             <tr>
                                 <th>Date / Time</th>
-                                <th>Drain Name</th>
+                                <th>Drain</th>
+                                <th>Device</th>
                                 <th>Water Level</th>
                                 <th>Pressure</th>
                                 <th>Temp</th>
@@ -99,7 +104,8 @@ export default function ReportsPage() {
                             {readings.map(r => (
                                 <tr key={r.id}>
                                     <td>{new Date(r.recorded_at).toLocaleString()}</td>
-                                    <td>{r.drains?.name ?? 'Unknown'}</td>
+                                    <td>{r.iot_devices?.drains?.name ?? 'Unknown'}</td>
+                                    <td>{r.iot_devices?.name ?? 'Unknown'}</td>
                                     <td>{r.water_level_pct}%</td>
                                     <td>{r.water_pressure_psi != null ? `${r.water_pressure_psi.toFixed(1)} PSI` : '-'}</td>
                                     <td>{r.temperature_c != null ? `${r.temperature_c.toFixed(1)} °C` : '-'}</td>

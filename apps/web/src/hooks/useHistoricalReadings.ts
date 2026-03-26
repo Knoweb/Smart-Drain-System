@@ -8,7 +8,7 @@ export interface HistoricalReading extends SensorReading {
 
 export type TimeRange = '24h' | '7d' | 'all'
 
-export function useHistoricalReadings(timeRange: TimeRange, drainId: string | 'all') {
+export function useHistoricalReadings(timeRange: TimeRange, deviceId: string | 'all') {
     const [readings, setReadings] = useState<HistoricalReading[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -22,12 +22,12 @@ export function useHistoricalReadings(timeRange: TimeRange, drainId: string | 'a
             .from('sensor_readings')
             .select(`
                 *,
-                drains ( name )
+                iot_devices ( name, drains ( name ) )
             `)
             .order('recorded_at', { ascending: false })
 
-        if (drainId !== 'all') {
-            query = query.eq('drain_id', drainId)
+        if (deviceId !== 'all') {
+            query = query.eq('device_id', deviceId)
         }
 
         if (timeRange === '24h') {
@@ -48,7 +48,7 @@ export function useHistoricalReadings(timeRange: TimeRange, drainId: string | 'a
         })
 
         return () => { cancelled = true }
-    }, [timeRange, drainId])
+    }, [timeRange, deviceId])
 
     return { readings, loading, error }
 }

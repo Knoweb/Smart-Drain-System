@@ -40,7 +40,7 @@ export function useDrains(): UseDrainsResult {
 
         supabase
             .from('drains')
-            .select('*')
+            .select('*, iot_devices(*)')
             .order('name')
             .then(({ data, error: sbError }) => {
                 if (cancelled) return

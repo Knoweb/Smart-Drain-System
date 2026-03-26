@@ -1,11 +1,6 @@
-/**
- * SENSORS PAGE — src/pages/SensorsPage.tsx
- * Uses useDrains to get all monitored locations, and maps them to SensorCards.
- */
 import { useDrains } from '@/hooks/useDrains'
 import { SensorCard } from '@/features/sensors/SensorCard'
 import styles from './Page.module.css'
-import sensorStyles from '@/features/sensors/SensorCard.module.css' // We'll share the grid
 
 export default function SensorsPage() {
     const { drains, loading, error } = useDrains()
@@ -29,10 +24,26 @@ export default function SensorsPage() {
                     <p>Loading sensors…</p>
                 </div>
             ) : drains.length > 0 ? (
-                <div className={styles.grid}>
-                    {drains.map(drain => (
-                        <SensorCard key={drain.id} drain={drain} />
-                    ))}
+                <div className={styles.groupsContainer} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    {drains.map(drain => {
+                        const devices = drain.iot_devices || []
+                        return (
+                            <div key={drain.id} className={styles.drainGroup}>
+                                <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
+                                    {drain.name}
+                                </h3>
+                                {devices.length === 0 ? (
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No IoT devices configured for this drain.</p>
+                                ) : (
+                                    <div className={styles.grid}>
+                                        {devices.map(device => (
+                                            <SensorCard key={device.id} device={device} drainName={drain.name} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
             ) : (
                 <div className={styles.placeholder}>

@@ -19,13 +19,12 @@ export function useAlerts() {
         let cancelled = false
         setLoading(true)
 
-        // Using Supabase relation query: '*, drains(name)'
-        // This tells PostgREST to follow the drain_id foreign key and fetch the name.
+        // Using Supabase relation query: '*, iot_devices(name, drains(name))'
         supabase
             .from('alerts')
             .select(`
         *,
-        drains ( name )
+        iot_devices ( name, drains ( name ) )
       `)
             .order('is_resolved', { ascending: true }) // Unresolved first
             .order('created_at', { ascending: false }) // Newest first

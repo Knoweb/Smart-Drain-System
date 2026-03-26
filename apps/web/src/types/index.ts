@@ -6,6 +6,16 @@
 
 export type DrainStatus = 'OPERATIONAL' | 'WARNING' | 'CRITICAL'
 
+export interface IoTDevice {
+    id: string
+    drain_id: string
+    name: string
+    latitude: number
+    longitude: number
+    status: DrainStatus
+    created_at: string
+}
+
 export interface Drain {
     id: string
     name: string
@@ -14,23 +24,29 @@ export interface Drain {
     baseline_depth_cm: number | null
     status: DrainStatus
     created_at: string
+    
+    // Joined relation
+    iot_devices?: IoTDevice[]
 }
 
 export interface SensorReading {
     id: string
-    drain_id: string
+    device_id: string
     water_level_pct: number
     water_pressure_psi: number | null
     temperature_c: number | null
     battery_level_pct: number | null
     recorded_at: string
+    
+    // Joined relation
+    iot_devices?: { name: string, drains?: { name: string } } | null
 }
 
 export type AlertType = 'HIGH_WATER_LEVEL' | 'LOW_BATTERY' | 'SENSOR_OFFLINE'
 
 export interface Alert {
     id: string
-    drain_id: string
+    device_id: string
     reading_id: string | null
     alert_type: AlertType | string
     message: string | null
@@ -38,5 +54,5 @@ export interface Alert {
     created_at: string
 
     // Joined relation when queried from Supabase:
-    drains?: { name: string } | null
+    iot_devices?: { name: string, drains?: { name: string } } | null
 }

@@ -12,26 +12,30 @@
  */
 
 import { useLatestReading } from '@/hooks/useLatestReading'
-import type { Drain } from '@/types'
+import type { IoTDevice } from '@/types'
 import { STATUS_COLOR_MAP } from '@/config/constants'
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts'
 import styles from './SensorCard.module.css'
 
 interface Props {
-    drain: Drain
+    device: IoTDevice
+    drainName: string
 }
 
-export function SensorCard({ drain }: Props) {
-    const { reading, loading } = useLatestReading(drain.id)
-    const statusColor = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
+export function SensorCard({ device, drainName }: Props) {
+    const { reading, loading } = useLatestReading(device.id)
+    const statusColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
 
     if (loading || !reading) {
         return (
             <div className={styles.card}>
                 <div className={styles.header}>
-                    <h3 className={styles.name}>{drain.name}</h3>
+                    <div>
+                        <h3 className={styles.name}>{device.name}</h3>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{drainName}</div>
+                    </div>
                     <span className={styles.badge} style={{ color: statusColor, borderColor: statusColor }}>
-                        {drain.status}
+                        {device.status}
                     </span>
                 </div>
                 <div className={styles.loading}>
@@ -53,9 +57,12 @@ export function SensorCard({ drain }: Props) {
     return (
         <div className={styles.card}>
             <div className={styles.header}>
-                <h3 className={styles.name}>{drain.name}</h3>
+                <div>
+                    <h3 className={styles.name}>{device.name}</h3>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{drainName}</div>
+                </div>
                 <span className={styles.badge} style={{ color: statusColor, borderColor: statusColor }}>
-                    {drain.status}
+                    {device.status}
                 </span>
             </div>
 
