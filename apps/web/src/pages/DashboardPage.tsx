@@ -15,10 +15,6 @@ export default function DashboardPage() {
 
     return (
         <div className={styles.page}>
-            <div className={styles.header}>
-                <h2 className={styles.title}>Overview</h2>
-                <p className={styles.subtitle}>Real-time summary of all drain sensors</p>
-            </div>
 
             {error && (
                 <div className={styles.errorBanner}>

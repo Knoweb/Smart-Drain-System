@@ -7,10 +7,6 @@ export default function SensorsPage() {
 
     return (
         <div className={styles.page}>
-            <div className={styles.header}>
-                <h2 className={styles.title}>Sensor Readings</h2>
-                <p className={styles.subtitle}>Live telemetry updated via WebSockets — water level, pressure, temp, battery</p>
-            </div>
 
             {error && (
                 <div className={styles.errorBanner}>

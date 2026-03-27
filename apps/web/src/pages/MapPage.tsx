@@ -13,12 +13,6 @@ export default function MapPage() {
 
     return (
         <div className={styles.page}>
-            <div className={styles.header}>
-                <h2 className={styles.title}>Drain Map</h2>
-                <p className={styles.subtitle}>
-                    Main overview of drain pipelines. Click a marker to see aggregate status.
-                </p>
-            </div>
             
             {/* The main overhead map (Drains only) */}
             <DrainMap />

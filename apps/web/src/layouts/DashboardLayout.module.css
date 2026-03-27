@@ -5,7 +5,8 @@
 .shell {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     transition: grid-template-columns 0.25s ease;
 }
 
@@ -20,10 +21,9 @@
     display: flex;
     flex-direction: column;
     padding: var(--space-4) 0;
-    position: sticky;
-    top: 0;
     height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .brand {
@@ -108,30 +108,42 @@
 .main {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* ── Topbar ──────────────────────────────────────────────────────────── */
 .topbar {
-    position: sticky;
-    top: 0;
     z-index: 50;
+    flex-shrink: 0;
     background: var(--topbar-bg, rgba(26, 29, 39, 0.85));
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--surface-border);
-    padding: 0 var(--space-6);
-    height: 60px;
+    padding: var(--space-3) var(--space-6);
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
+.pageInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
 .pageTitle {
     font-family: var(--font-heading);
-    font-size: 1rem;
+    font-size: 1.4rem;
     font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.pageSubtitle {
+    font-size: 0.85rem;
     color: var(--text-secondary);
+    margin: 0;
 }
 
 .topbarRight {
@@ -178,4 +190,6 @@
 .content {
     flex: 1;
     padding: var(--space-6);
+    overflow-y: auto;
+    overflow-x: hidden;
 }

@@ -7,10 +7,6 @@ export default function SettingsPage() {
 
     return (
         <div className={pageStyles.page}>
-            <div className={pageStyles.header}>
-                <h2 className={pageStyles.title}>Settings</h2>
-                <p className={pageStyles.subtitle}>Configure system preferences and alerts</p>
-            </div>
 
             <div className={styles.settingsGrid}>
                 {/* Theme Setting */}

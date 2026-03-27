@@ -18,10 +18,6 @@ export default function ReportsPage() {
 
     return (
         <div className={pageStyles.page}>
-            <div className={`printHide ${pageStyles.header}`}>
-                <h2 className={pageStyles.title}>Reports</h2>
-                <p className={pageStyles.subtitle}>Export historical sensor data as CSV or PDF</p>
-            </div>
 
             <div className={`printHide ${styles.filters}`}>
                 <div className={styles.filterGroup}>

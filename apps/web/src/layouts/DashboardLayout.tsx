@@ -15,8 +15,17 @@
  */
 
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import styles from './DashboardLayout.module.css'
+
+const PAGE_HEADERS: Record<string, { title: string; subtitle: string }> = {
+    '/': { title: 'Overview', subtitle: 'Real-time summary of all drain sensors' },
+    '/map': { title: 'Drain Map', subtitle: 'Overview of drain pipelines' },
+    '/sensors': { title: 'Sensor Readings', subtitle: 'Live telemetry updated via WebSockets' },
+    '/alerts': { title: 'System Alerts', subtitle: 'Active and historical system alerts' },
+    '/reports': { title: 'Reports', subtitle: 'Export historical sensor data as CSV or PDF' },
+    '/settings': { title: 'Settings', subtitle: 'Configure system preferences and alerts' },
+}
 
 const NAV_ITEMS = [
     { to: '/', icon: '⊞', label: 'Dashboard' },
@@ -29,6 +38,8 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false)
+    const location = useLocation()
+    const headerInfo = PAGE_HEADERS[location.pathname] || { title: 'Smart Drain System', subtitle: '' }
 
     return (
         <div className={`${styles.shell} ${collapsed ? styles.collapsed : ''}`}>
@@ -67,7 +78,10 @@ export default function DashboardLayout() {
             {/* ── Main area (topbar + page content) ───────── */}
             <div className={styles.main}>
                 <header className={styles.topbar}>
-                    <h1 className={styles.pageTitle}>Smart Drain System</h1>
+                    <div className={styles.pageInfo}>
+                        <h1 className={styles.pageTitle}>{headerInfo.title}</h1>
+                        {headerInfo.subtitle && <p className={styles.pageSubtitle}>{headerInfo.subtitle}</p>}
+                    </div>
                     <div className={styles.topbarRight}>
                         <span className={styles.liveBadge}>● LIVE</span>
                         <div className={styles.avatar}>AD</div>
