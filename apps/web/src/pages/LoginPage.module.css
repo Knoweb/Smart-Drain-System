@@ -16,8 +16,8 @@
     flex-direction: column;
     justify-content: flex-end; /* Pushes content to the bottom */
     align-items: flex-start; /* Pushes content to the left */
-    background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.8)), url('../../assets/bg1.png') center center / cover no-repeat;
-    color: rgba(220, 220, 224, 0.758);
+    background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.1)), url('../../assets/bg2.jpeg') center center / cover no-repeat;
+    color: rgba(234, 238, 239, 0.925);
     padding: 1.25rem; /* Reduced padding from 4rem to push it further down */
     text-align: left; /* Aligns the text left instead of center */
     position: relative;

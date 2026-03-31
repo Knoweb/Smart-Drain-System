@@ -104,8 +104,8 @@ html.light {
   --surface-card: #ffffff;        /* Card / panel background */
   --surface-card-hover: #f1f5f9;
   --surface-border: #e2e8f0;      /* Subtle borders */
-  --surface-sidebar: #f8fafc;     /* Sidebar background */
-  --topbar-bg: rgba(255, 255, 255, 0.85);
+  --surface-sidebar: #e0f2fe;     /* Sidebar background (Light Blue) */
+  --topbar-bg: rgba(224, 242, 254, 0.85); /* Topbar background (Light Blue with opacity for blur) */
 
   /* --- Text --- */
   --text-primary: #0f172a;        /* Main headings */

@@ -17,6 +17,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 import styles from './DashboardLayout.module.css'
 
 const PAGE_HEADERS: Record<string, { title: string; subtitle: string }> = {
@@ -41,11 +42,30 @@ export default function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false)
     const location = useLocation()
     const navigate = useNavigate()
+    const { user } = useAuth()
     const headerInfo = PAGE_HEADERS[location.pathname] || { title: 'Smart Drain System', subtitle: '' }
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
         navigate('/login')
+    }
+
+    // Get user initials for the avatar (from username or email)
+    const getInitials = () => {
+        if (!user) return '??'
+        
+        // Check for custom username first
+        const username = user.user_metadata?.username
+        if (username && typeof username === 'string') {
+            return username.substring(0, 2).toUpperCase()
+        }
+        
+        // Fallback to email
+        if (user.email) {
+            return user.email.substring(0, 2).toUpperCase()
+        }
+        
+        return 'US'
     }
 
     return (
@@ -100,7 +120,12 @@ export default function DashboardLayout() {
                     </div>
                     <div className={styles.topbarRight}>
                         <span className={styles.liveBadge}>● LIVE</span>
-                        <div className={styles.avatar}>AD</div>
+                        <div 
+                            className={styles.avatar} 
+                            title={user?.user_metadata?.username || user?.email || 'User Profile'}
+                        >
+                            {getInitials()}
+                        </div>
                     </div>
                 </header>
 
