@@ -25,27 +25,37 @@ import SensorsPage from '@/pages/SensorsPage'
 import AlertsPage from '@/pages/AlertsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import SettingsPage from '@/pages/SettingsPage'
+import LoginPage from '@/pages/LoginPage'
+import ProtectedRoute from '@/components/ProtectedRoute'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 export default function App() {
     return (
-        <ThemeProvider>
-            <BrowserRouter>
-            <Routes>
-                {/* All dashboard routes share the layout (sidebar + topbar) */}
-                <Route element={<DashboardLayout />}>
-                    <Route path="/" element={<DashboardPage />} />
-                    <Route path="/map" element={<MapPage />} />
-                    <Route path="/sensors" element={<SensorsPage />} />
-                    <Route path="/alerts" element={<AlertsPage />} />
-                    <Route path="/reports" element={<ReportsPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                </Route>
+        <AuthProvider>
+            <ThemeProvider>
+                <BrowserRouter>
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/login" element={<LoginPage />} />
 
-                {/* Redirect any unknown route to home */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </BrowserRouter>
-        </ThemeProvider>
+                    {/* Protected Routes: wrap the layout with ProtectedRoute */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route element={<DashboardLayout />}>
+                            <Route path="/" element={<DashboardPage />} />
+                            <Route path="/map" element={<MapPage />} />
+                            <Route path="/sensors" element={<SensorsPage />} />
+                            <Route path="/alerts" element={<AlertsPage />} />
+                            <Route path="/reports" element={<ReportsPage />} />
+                            <Route path="/settings" element={<SettingsPage />} />
+                        </Route>
+                    </Route>
+
+                    {/* Redirect any unknown route to home */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </BrowserRouter>
+            </ThemeProvider>
+        </AuthProvider>
     )
 }
