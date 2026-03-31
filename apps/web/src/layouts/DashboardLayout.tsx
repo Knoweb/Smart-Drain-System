@@ -15,7 +15,8 @@
  */
 
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import styles from './DashboardLayout.module.css'
 
 const PAGE_HEADERS: Record<string, { title: string; subtitle: string }> = {
@@ -39,7 +40,13 @@ const NAV_ITEMS = [
 export default function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false)
     const location = useLocation()
+    const navigate = useNavigate()
     const headerInfo = PAGE_HEADERS[location.pathname] || { title: 'Smart Drain System', subtitle: '' }
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut()
+        navigate('/login')
+    }
 
     return (
         <div className={`${styles.shell} ${collapsed ? styles.collapsed : ''}`}>
@@ -72,6 +79,15 @@ export default function DashboardLayout() {
                     title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 >
                     {collapsed ? '»' : '«'}
+                </button>
+
+                <button
+                    className={styles.signOutBtn}
+                    onClick={handleSignOut}
+                    title="Sign Out"
+                >
+                    <span className={styles.navIcon}>🚪</span>
+                    {!collapsed && <span className={styles.navLabel}>Sign Out</span>}
                 </button>
             </aside>
 

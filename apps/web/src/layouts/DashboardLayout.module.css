@@ -98,10 +98,41 @@
     padding: var(--space-3) var(--space-4);
     text-align: right;
     transition: color 0.15s;
+    margin-top: auto;
 }
 
 .collapseBtn:hover {
     color: var(--text-primary);
+}
+
+/* ── Sign Out Button ─────────────────────────────────────────────────── */
+.signOutBtn {
+    margin: 0 var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0.6rem var(--space-3);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: var(--radius-md);
+}
+
+.signOutBtn:hover {
+    background: rgba(239, 68, 68, 0.1); 
+    color: #ef4444; 
+}
+
+/* Make sure the text color turns red on hover inside button */
+.signOutBtn:hover .navLabel, 
+.signOutBtn:hover .navIcon {
+    color: #ef4444;
 }
 
 /* ── Main (topbar + content) ─────────────────────────────────────────── */
