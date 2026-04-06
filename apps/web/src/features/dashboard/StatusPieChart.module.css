@@ -1,0 +1,139 @@
+/* StatusPieChart.module.css */
+
+.container {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* ── Chart + center-label stacking context ── */
+.chartWrapper {
+    position: relative;
+}
+
+/* CSS overlay in the donut hole center */
+.centerLabel {
+    position: absolute;
+    /* The Recharts PieChart centers at cx=50%, cy=50% of the SVG.
+       The SVG is 240px tall; we nudge to match the donut center.
+       top/left 50% + translate -50% centers the overlay perfectly. */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    /* Keep above SVG but below tooltip */
+    z-index: 1;
+}
+
+.centerTotal {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.centerSubtext {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+}
+
+/* ── Breakdown row under the chart ── */
+.breakdown {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-6);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--surface-border);
+}
+
+.breakdownItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.breakdownDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.breakdownCount {
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    line-height: 1;
+}
+
+.breakdownLabel {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+}
+
+/* ── Tooltip ── */
+.tooltip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.tooltipDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.tooltipLabel {
+    color: var(--text-secondary);
+}
+
+.tooltipValue {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-left: auto;
+    padding-left: var(--space-3);
+}
+
+/* ── Empty state ── */
+.empty {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}

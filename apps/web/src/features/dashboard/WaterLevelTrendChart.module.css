@@ -1,0 +1,134 @@
+/* WaterLevelTrendChart.module.css */
+
+.container {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Alert threshold legend label */
+.alertBadge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.alertDash {
+    display: inline-block;
+    width: 24px;
+    height: 2px;
+    background: repeating-linear-gradient(
+        to right,
+        #ef4444 0,
+        #ef4444 6px,
+        transparent 6px,
+        transparent 9px
+    );
+    border-radius: 1px;
+}
+
+/* ── Loading state ── */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    height: 280px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.spinner {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--surface-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Empty state ── */
+.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 240px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* ── Custom tooltip ── */
+.tooltip {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tooltipTime {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.tooltipRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.tooltipDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.tooltipName {
+    color: var(--text-secondary);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.tooltipVal {
+    font-weight: 700;
+    margin-left: auto;
+    padding-left: var(--space-2);
+}

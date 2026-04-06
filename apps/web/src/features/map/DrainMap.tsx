@@ -85,31 +85,29 @@ export function DrainMap() {
                     const color = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
 
                     return (
-                        <div key={drain.id}>
-                            <CircleMarker
-                                center={[drain.latitude, drain.longitude]}
-                                radius={14}
-                                pathOptions={{
-                                    fillColor: color,
-                                    fillOpacity: 0.85,
-                                    color: '#ffffff',     // white border ring
-                                    weight: 2,
-                                }}
-                            >
-                                {/* Tooltip: shown on hover */}
-                                <Tooltip direction="top" offset={[0, -10]}>
-                                    <strong>{drain.name}</strong>
-                                    <br />
-                                    <span style={{ color }}>{drain.status}</span>
-                                </Tooltip>
+                        <CircleMarker
+                            key={drain.id}
+                            center={[drain.latitude, drain.longitude]}
+                            radius={14}
+                            pathOptions={{
+                                fillColor: color,
+                                fillOpacity: 0.85,
+                                color: '#ffffff',
+                                weight: 2,
+                            }}
+                        >
+                            {/* Tooltip: shown on hover */}
+                            <Tooltip direction="top" offset={[0, -10]}>
+                                <strong>{drain.name}</strong>
+                                <br />
+                                <span style={{ color }}>{drain.status}</span>
+                            </Tooltip>
 
-                                {/* Popup: shown on click */}
-                                <Popup minWidth={240} maxWidth={280}>
-                                    <DrainPopup drain={drain} />
-                                </Popup>
-                            </CircleMarker>
-
-                        </div>
+                            {/* Popup: shown on click */}
+                            <Popup minWidth={240} maxWidth={280}>
+                                <DrainPopup drain={drain} />
+                            </Popup>
+                        </CircleMarker>
                     )
                 })}
             </MapContainer>
