@@ -12,9 +12,10 @@
  */
 
 import { useLatestReading } from '@/hooks/useLatestReading'
+import { useDeviceReadings } from '@/hooks/useDeviceReadings'
 import type { IoTDevice } from '@/types'
 import { STATUS_COLOR_MAP } from '@/config/constants'
-import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts'
+import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import styles from './SensorCard.module.css'
 
 interface Props {
@@ -24,6 +25,7 @@ interface Props {
 
 export function SensorCard({ device, drainName }: Props) {
     const { reading, loading } = useLatestReading(device.id)
+    const { readings: sparkData } = useDeviceReadings(device.id, 20)
     const statusColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
 
     if (loading || !reading) {
@@ -46,13 +48,14 @@ export function SensorCard({ device, drainName }: Props) {
     }
 
     // --- Gauge Data Prep ---
-    // RadialBarChart wants an array of objects. We map 0-100 values to the angle axis.
-
-    const waterColor = reading.water_level_pct >= 80 ? '#ef4444' // Red if critical
-        : reading.water_level_pct >= 60 ? '#f59e0b' // Amber if warning
-            : '#3b82f6'                                 // Blue if normal
+    const waterColor = reading.water_level_pct >= 80 ? '#ef4444'
+        : reading.water_level_pct >= 60 ? '#f59e0b'
+            : '#3b82f6'
 
     const batteryColor = (reading.battery_level_pct ?? 100) < 20 ? '#ef4444' : '#22c55e'
+
+    // Sparkline: map readings to {v} objects for Recharts
+    const sparkPoints = sparkData.map(r => ({ v: r.water_level_pct }))
 
     return (
         <div className={styles.card}>
@@ -140,6 +143,32 @@ export function SensorCard({ device, drainName }: Props) {
                     </span>
                 </div>
             </div>
+
+            {/* ── Sparkline: last 20 water level readings ── */}
+            {sparkPoints.length > 1 && (
+                <div className={styles.sparklineWrapper}>
+                    <span className={styles.sparklineLabel}>Water level trend</span>
+                    <ResponsiveContainer width="100%" height={40}>
+                        <AreaChart data={sparkPoints} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id={`spark-${device.id}`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%"  stopColor={waterColor} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={waterColor} stopOpacity={0.02} />
+                                </linearGradient>
+                            </defs>
+                            <Area
+                                type="monotone"
+                                dataKey="v"
+                                stroke={waterColor}
+                                strokeWidth={1.5}
+                                fill={`url(#spark-${device.id})`}
+                                dot={false}
+                                isAnimationActive={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
 
             <div className={styles.footer}>
                 Updated {new Date(reading.recorded_at).toLocaleTimeString()}

@@ -1,35 +1,41 @@
 /**
  * DrainMap — src/features/map/DrainMap.tsx
  * ---------------------------------------------------------------------------
- * The interactive React-Leaflet map showing all drain locations as
- * color-coded circle markers. Click a marker to see live sensor readings.
- *
- * KEY CONCEPTS YOU'LL LEARN HERE:
- *
- * 1. MapContainer: The root Leaflet component. Sets start position and zoom.
- *    You can only have ONE MapContainer per page.
- *
- * 2. TileLayer: The map background tiles (the actual street map imagery).
- *    We use OpenStreetMap — free, no API key needed.
- *
- * 3. CircleMarker: A circular dot on the map at lat/lng coordinates.
- *    We color it based on drain.status (green/amber/red).
- *
- * 4. Popup: Shows a card when user clicks a marker.
- *    We render our <DrainPopup> component inside it.
- *
- * 5. Tooltip: Small label shown on hover (before clicking).
+ * Exports:
+ *   DrainMap        — the original full overview map (all drains, legend)
+ *   DrainCardsGrid  — responsive grid of per-drain cards with embedded maps
+ *   DrainDetailCard — single drain card
  */
 
-import { Popup, Tooltip } from 'react-leaflet'
+import { Popup, Tooltip, useMap } from 'react-leaflet'
 import { CircleMarker } from 'react-leaflet/CircleMarker'
 import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import { useDrains } from '@/hooks/useDrains'
 import { DrainPopup, DevicePopup } from './DrainPopup'
 import { MAP_CENTER, MAP_DEFAULT_ZOOM, STATUS_COLOR_MAP } from '@/config/constants'
+import type { Drain } from '@/types'
 import styles from './DrainMap.module.css'
 
+// ── Reset-to-default-view control (renders inside MapContainer) ──────────────
+// useMap() only works as a child of MapContainer, so this must be a component.
+function ResetControl({ center, zoom }: { center: [number, number]; zoom: number }) {
+    const map = useMap()
+    return (
+        <button
+            className={styles.resetBtn}
+            title="Reset to default view"
+            onClick={(e) => {
+                e.stopPropagation()
+                map.setView(center, zoom, { animate: true })
+            }}
+        >
+            ⊹
+        </button>
+    )
+}
+
+// ── Full overview map (unchanged from original) ──────────────────────────────
 export function DrainMap() {
     const { drains, loading, error } = useDrains()
 
@@ -68,14 +74,11 @@ export function DrainMap() {
                 {drains.length} drain{drains.length !== 1 ? 's' : ''} monitored
             </div>
 
-        {/* ── The actual Leaflet map ── */}
             <MapContainer
                 center={MAP_CENTER}
                 zoom={MAP_DEFAULT_ZOOM}
                 className={styles.map}
-            // scrollWheelZoom allowed — good UX for embedded maps
             >
-                {/* OpenStreetMap tile layer — no API key required */}
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -83,7 +86,6 @@ export function DrainMap() {
 
                 {drains.map((drain) => {
                     const color = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
-
                     return (
                         <CircleMarker
                             key={drain.id}
@@ -96,14 +98,11 @@ export function DrainMap() {
                                 weight: 2,
                             }}
                         >
-                            {/* Tooltip: shown on hover */}
                             <Tooltip direction="top" offset={[0, -10]}>
                                 <strong>{drain.name}</strong>
                                 <br />
                                 <span style={{ color }}>{drain.status}</span>
                             </Tooltip>
-
-                            {/* Popup: shown on click */}
                             <Popup minWidth={240} maxWidth={280}>
                                 <DrainPopup drain={drain} />
                             </Popup>
@@ -115,87 +114,7 @@ export function DrainMap() {
     )
 }
 
-export function DrainDetailMap({ drain }: { drain: import('@/types').Drain }) {
-    if (!drain.iot_devices || drain.iot_devices.length === 0) {
-        return (
-            <div className={styles.subMapWrapper} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                <h3>{drain.name}</h3>
-                <p>No IoT devices installed at this location.</p>
-            </div>
-        )
-    }
-
-    return (
-        <div className={styles.subMapWrapper}>
-            <div className={styles.subMapHeader}>
-                <h3>{drain.name} — IoT Devices</h3>
-                <span style={{
-                    padding: '0.25rem 0.75rem', 
-                    borderRadius: '999px', 
-                    fontSize: '0.75rem', 
-                    fontWeight: 600, 
-                    border: `1px solid ${STATUS_COLOR_MAP[drain.status]}`, 
-                    color: STATUS_COLOR_MAP[drain.status]
-                }}>
-                    {drain.status}
-                </span>
-            </div>
-            
-            <MapContainer
-                center={[drain.latitude, drain.longitude]}
-                zoom={18} // High zoom level to see devices
-                className={styles.subMap}
-                scrollWheelZoom={false}
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-
-                {/* Parent Drain Area Marker (faded / large) */}
-                <CircleMarker
-                    center={[drain.latitude, drain.longitude]}
-                    radius={30}
-                    pathOptions={{
-                        fillColor: STATUS_COLOR_MAP[drain.status] ?? '#94a3b8',
-                        fillOpacity: 0.1,
-                        color: STATUS_COLOR_MAP[drain.status] ?? '#94a3b8',
-                        weight: 1,
-                        dashArray: '4'
-                    }}
-                >
-                    <Tooltip direction="top" offset={[0, -10]}>Drain Central Zone</Tooltip>
-                </CircleMarker>
-
-                {/* Sub-Devices markers */}
-                {drain.iot_devices.map(device => {
-                    const devColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
-                    return (
-                        <CircleMarker
-                            key={device.id}
-                            center={[device.latitude, device.longitude]}
-                            radius={8}
-                            pathOptions={{
-                                fillColor: devColor,
-                                fillOpacity: 1,
-                                color: '#ffffff',
-                                weight: 2,
-                            }}
-                        >
-                            <Tooltip direction="top" offset={[0, -6]}>
-                                <strong>{device.name}</strong>
-                            </Tooltip>
-                            <Popup minWidth={240} maxWidth={280}>
-                                <DevicePopup device={device} drainName={drain.name} />
-                            </Popup>
-                        </CircleMarker>
-                    )
-                })}
-            </MapContainer>
-        </div>
-    )
-}
-
-// ── Legend item ──────────────────────────────────────────────────────────────
+// ── Legend item helper ───────────────────────────────────────────────────────
 function LegendItem({ color, label }: { color: string; label: string }) {
     return (
         <div className={styles.legendItem}>
@@ -204,3 +123,195 @@ function LegendItem({ color, label }: { color: string; label: string }) {
         </div>
     )
 }
+
+// ── Loading / Error skeleton shared across cards ─────────────────────────────
+export function DrainCardsGrid() {
+    const { drains, loading, error } = useDrains()
+
+    if (loading) {
+        return (
+            <div className={styles.skeletonGrid}>
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className={styles.skeleton} />
+                ))}
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className={styles.errorState}>
+                <span>⚠️</span>
+                <p>Failed to load drains: {error}</p>
+            </div>
+        )
+    }
+
+    if (drains.length === 0) {
+        return (
+            <div className={styles.errorState}>
+                <span>💧</span>
+                <p>No drains found. Add rows to the <code>drains</code> table.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className={styles.cardsGrid}>
+            {drains.map(drain => (
+                <DrainDetailCard key={drain.id} drain={drain} />
+            ))}
+        </div>
+    )
+}
+
+// ── Individual drain card with embedded map ──────────────────────────────────
+export function DrainDetailCard({ drain }: { drain: Drain }) {
+    const devices = drain.iot_devices ?? []
+    const statusColor = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
+
+    const hasDevices = devices.length > 0
+
+    return (
+        <div className={styles.card}>
+            {/* ── Status accent bar ── */}
+            <div className={styles.cardAccent} style={{ background: statusColor }} />
+
+            {/* ── Map ── */}
+            <div className={styles.cardMapWrapper}>
+                <MapContainer
+                    center={[drain.latitude, drain.longitude]}
+                    zoom={hasDevices ? 17 : 16}
+                    className={styles.cardMap}
+                    scrollWheelZoom={false}
+                    zoomControl={true}
+                    attributionControl={false}
+                    key={drain.id}
+                >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                    {/* Drain area ring — large faint circle */}
+                    <CircleMarker
+                        center={[drain.latitude, drain.longitude]}
+                        radius={28}
+                        pathOptions={{
+                            fillColor: statusColor,
+                            fillOpacity: 0.08,
+                            color: statusColor,
+                            weight: 1.5,
+                            dashArray: '5 4',
+                        }}
+                    />
+
+                    {/* Drain main marker */}
+                    <CircleMarker
+                        center={[drain.latitude, drain.longitude]}
+                        radius={13}
+                        pathOptions={{
+                            fillColor: statusColor,
+                            fillOpacity: 0.9,
+                            color: '#ffffff',
+                            weight: 2.5,
+                        }}
+                    >
+                        <Tooltip direction="top" offset={[0, -14]} permanent={false}>
+                            <strong>{drain.name}</strong>
+                        </Tooltip>
+                        <Popup minWidth={220} maxWidth={260}>
+                            <DrainPopup drain={drain} />
+                        </Popup>
+                    </CircleMarker>
+
+                    {/* IoT device markers */}
+                    {devices.map(device => {
+                        const devColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
+                        return (
+                            <CircleMarker
+                                key={device.id}
+                                center={[device.latitude, device.longitude]}
+                                radius={7}
+                                pathOptions={{
+                                    fillColor: devColor,
+                                    fillOpacity: 1,
+                                    color: '#ffffff',
+                                    weight: 2,
+                                }}
+                            >
+                                <Tooltip direction="top" offset={[0, -8]}>
+                                    <span>{device.name}</span>
+                                    <br />
+                                    <span style={{ color: devColor, fontSize: '0.8em' }}>{device.status}</span>
+                                </Tooltip>
+                                <Popup minWidth={220} maxWidth={260}>
+                                    <DevicePopup device={device} drainName={drain.name} />
+                                </Popup>
+                            </CircleMarker>
+                        )
+                    })}
+
+                    {/* Reset view button — renders inside the map via useMap() */}
+                    <ResetControl
+                        center={[drain.latitude, drain.longitude]}
+                        zoom={hasDevices ? 17 : 16}
+                    />
+                </MapContainer>
+
+                {/* Device count badge overlaid on map */}
+                <div className={styles.deviceBadge}>
+                    {devices.length} device{devices.length !== 1 ? 's' : ''}
+                </div>
+            </div>
+
+            {/* ── Info row below the map ── */}
+            <div className={styles.cardInfo}>
+                <div className={styles.cardTitleRow}>
+                    <h3 className={styles.cardTitle}>{drain.name}</h3>
+                    <span
+                        className={styles.statusPill}
+                        style={{ color: statusColor, borderColor: statusColor, background: `${statusColor}18` }}
+                    >
+                        {drain.status}
+                    </span>
+                </div>
+
+                <div className={styles.cardMeta}>
+                    <span className={styles.metaItem}>
+                        <span className={styles.metaIcon}>📍</span>
+                        {drain.latitude.toFixed(5)}, {drain.longitude.toFixed(5)}
+                    </span>
+                    {drain.baseline_depth_cm != null && (
+                        <span className={styles.metaItem}>
+                            <span className={styles.metaIcon}>📏</span>
+                            Depth: {drain.baseline_depth_cm} cm
+                        </span>
+                    )}
+                </div>
+
+                {/* Device list under map */}
+                {devices.length > 0 && (
+                    <div className={styles.deviceList}>
+                        {devices.map(device => {
+                            const devColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
+                            return (
+                                <div key={device.id} className={styles.deviceRow}>
+                                    <span className={styles.deviceDot} style={{ background: devColor }} />
+                                    <span className={styles.deviceName}>{device.name}</span>
+                                    <span className={styles.deviceStatus} style={{ color: devColor }}>
+                                        {device.status}
+                                    </span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+
+                {devices.length === 0 && (
+                    <p className={styles.noDevices}>No IoT devices installed</p>
+                )}
+            </div>
+        </div>
+    )
+}
+
+// kept for backward compat but no longer used in MapPage
+export { DrainDetailCard as DrainDetailMap }

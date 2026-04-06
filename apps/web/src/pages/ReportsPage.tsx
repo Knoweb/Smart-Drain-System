@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useDrains } from '@/hooks/useDrains'
 import { useHistoricalReadings, TimeRange } from '@/hooks/useHistoricalReadings'
 import { exportToCSV, exportToPDF } from '@/lib/exportUtils'
+import { HistoricalChart } from '@/features/reports/HistoricalChart'
 import styles from './ReportsPage.module.css'
 import pageStyles from './Page.module.css'
 
@@ -19,11 +20,12 @@ export default function ReportsPage() {
     return (
         <div className={pageStyles.page}>
 
+            {/* ── Filter Bar ── */}
             <div className={`printHide ${styles.filters}`}>
                 <div className={styles.filterGroup}>
                     <label>Time Range</label>
-                    <select 
-                        value={timeRange} 
+                    <select
+                        value={timeRange}
                         onChange={(e) => setTimeRange(e.target.value as TimeRange)}
                         className={styles.select}
                     >
@@ -32,11 +34,11 @@ export default function ReportsPage() {
                         <option value="all">All Historical Data</option>
                     </select>
                 </div>
-                
+
                 <div className={styles.filterGroup}>
                     <label>IoT Device</label>
-                    <select 
-                        value={selectedDevice} 
+                    <select
+                        value={selectedDevice}
                         onChange={(e) => setSelectedDevice(e.target.value)}
                         className={styles.select}
                     >
@@ -52,14 +54,14 @@ export default function ReportsPage() {
                 </div>
 
                 <div className={styles.actions}>
-                    <button 
-                        onClick={handleExportCSV} 
+                    <button
+                        onClick={handleExportCSV}
                         disabled={readings.length === 0}
                         className={styles.btnSecondary}
                     >
                         ⬇ Export CSV
                     </button>
-                    <button 
+                    <button
                         onClick={() => exportToPDF(readings, `drain_report_${new Date().toISOString().split('T')[0]}.pdf`)}
                         disabled={readings.length === 0}
                         className={styles.btnSecondary}
@@ -75,6 +77,17 @@ export default function ReportsPage() {
                 </div>
             )}
 
+            {/* ── Historical Trend Chart ── */}
+            <div className="printHide">
+                <HistoricalChart
+                    readings={readings}
+                    loading={loading}
+                    timeRange={timeRange}
+                    deviceId={selectedDevice}
+                />
+            </div>
+
+            {/* ── Data Table ── */}
             <div className={pageStyles.drainTable}>
                 <div className={`printHide ${pageStyles.tableTitle}`}>
                     Data Summary ({readings.length} records)
@@ -102,10 +115,25 @@ export default function ReportsPage() {
                                     <td>{new Date(r.recorded_at).toLocaleString()}</td>
                                     <td>{r.iot_devices?.drains?.name ?? 'Unknown'}</td>
                                     <td>{r.iot_devices?.name ?? 'Unknown'}</td>
-                                    <td>{r.water_level_pct}%</td>
+                                    <td>
+                                        <span style={{
+                                            color: r.water_level_pct >= 80 ? '#ef4444'
+                                                : r.water_level_pct >= 60 ? '#f59e0b'
+                                                    : 'inherit',
+                                            fontWeight: r.water_level_pct >= 80 ? 600 : 400,
+                                        }}>
+                                            {r.water_level_pct}%
+                                        </span>
+                                    </td>
                                     <td>{r.water_pressure_psi != null ? `${r.water_pressure_psi.toFixed(1)} PSI` : '-'}</td>
                                     <td>{r.temperature_c != null ? `${r.temperature_c.toFixed(1)} °C` : '-'}</td>
-                                    <td>{r.battery_level_pct != null ? `${r.battery_level_pct}%` : '-'}</td>
+                                    <td>
+                                        <span style={{
+                                            color: (r.battery_level_pct ?? 100) < 20 ? '#ef4444' : 'inherit',
+                                        }}>
+                                            {r.battery_level_pct != null ? `${r.battery_level_pct}%` : '-'}
+                                        </span>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -113,7 +141,7 @@ export default function ReportsPage() {
                 )}
             </div>
 
-            {/* Print overrides to format nicely as a report and hide sidebars */}
+            {/* Print overrides */}
             <style>{`
                 @media print {
                     .printHide, aside, header {
@@ -130,15 +158,8 @@ export default function ReportsPage() {
                         text-shadow: none !important;
                         box-shadow: none !important;
                     }
-                    table {
-                        width: 100%;
-                        border: 1px solid #ccc;
-                    }
-                    th, td {
-                        border-bottom: 1px solid #ddd;
-                        padding: 8px !important;
-                        text-align: left;
-                    }
+                    table { width: 100%; border: 1px solid #ccc; }
+                    th, td { border-bottom: 1px solid #ddd; padding: 8px !important; text-align: left; }
                     th { font-weight: bold; }
                 }
             `}</style>

@@ -1,37 +1,32 @@
 /**
  * MAP PAGE — src/pages/MapPage.tsx
- * Now uses the real DrainMap component powered by live Supabase data.
+ * ---------------------------------------------------------------------------
+ * Layout:
+ *   1. Full overview map  — original DrainMap (all drains on one map)
+ *   2. "Detailed Device Locations" — per-drain cards with individual maps
  */
-import { DrainMap, DrainDetailMap } from '@/features/map/DrainMap'
-import { useDrains } from '@/hooks/useDrains'
-import styles from './Page.module.css'
+import { DrainMap, DrainCardsGrid } from '@/features/map/DrainMap'
+import styles from './MapPage.module.css'
 
 export default function MapPage() {
-    const { drains } = useDrains()
-
-    const sortedDrains = [...drains].sort((a, b) => a.name.localeCompare(b.name))
-
     return (
         <div className={styles.page}>
-            
-            {/* The main overhead map (Drains only) */}
+
+            {/* ── 1. Full overview map (unchanged) ── */}
             <DrainMap />
 
-            {/* Individual detailed maps (IoT Devices only) */}
-            <div style={{ marginTop: '3rem' }}>
-                <h3 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
-                    Detailed Device Locations
-                </h3>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.9rem' }}>
-                    Below are the individual drain sites showing the precise mapping of IoT sensor nodes.
-                </p>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
-                    {sortedDrains.map(drain => (
-                        <DrainDetailMap key={drain.id} drain={drain} />
-                    ))}
+            {/* ── 2. Per-drain detail cards ── */}
+            <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>Detailed Device Locations</h3>
+                    <p className={styles.sectionDesc}>
+                        Each drain site showing the precise location of its IoT sensor nodes.
+                        Click any marker for live readings.
+                    </p>
                 </div>
+                <DrainCardsGrid />
             </div>
+
         </div>
     )
 }
