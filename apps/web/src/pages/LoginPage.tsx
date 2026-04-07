@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './LoginPage.module.css';
+import logoImg from '../../assets/logo.jpeg';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -79,8 +80,13 @@ export default function LoginPage() {
       <div className={styles.formSection}>
         {/* Mobile Brand Name */}
         <div className={styles.brandMobile}>
-            <span>💧</span>
-            <span>SmartDrain</span>
+          <span>💧</span>
+          <span>SmartDrain</span>
+        </div>
+
+        {/* Logo Image */}
+        <div className={styles.logoContainer}>
+          <img src={logoImg} alt="Smart Drain Logo" className={styles.logo} />
         </div>
 
         <h2 className={styles.title}>
@@ -89,7 +95,7 @@ export default function LoginPage() {
         <p className={styles.subtitle}>
           {isLogin ? 'Please enter your credentials to access the dashboard.' : 'Sign up to monitor telemetry data.'}
         </p>
-        
+
         {error && <div className={styles.errorMessage}>{error}</div>}
         {successMsg && <div className={styles.successMessage}>{successMsg}</div>}
 
@@ -108,7 +114,7 @@ export default function LoginPage() {
               />
             </div>
           )}
-          
+
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.label}>Email Address</label>
             <input
@@ -121,7 +127,7 @@ export default function LoginPage() {
               required
             />
           </div>
-          
+
           <div className={styles.formGroup}>
             <label htmlFor="password" className={styles.label}>Password</label>
             <div className={styles.passwordContainer}>
@@ -134,9 +140,9 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 required
               />
-              <button 
-                type="button" 
-                className={styles.eyeButton} 
+              <button
+                type="button"
+                className={styles.eyeButton}
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
@@ -170,9 +176,9 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required={!isLogin}
                 />
-                <button 
-                  type="button" 
-                  className={styles.eyeButton} 
+                <button
+                  type="button"
+                  className={styles.eyeButton}
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
@@ -194,8 +200,8 @@ export default function LoginPage() {
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.submitButton}
             disabled={loading}
           >
@@ -205,8 +211,8 @@ export default function LoginPage() {
 
         <div className={styles.toggleMode}>
           {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => setIsLogin(!isLogin)}
             className={styles.toggleButton}
           >
