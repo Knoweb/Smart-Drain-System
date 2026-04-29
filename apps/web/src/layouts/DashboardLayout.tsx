@@ -15,10 +15,11 @@
  */
 
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './DashboardLayout.module.css'
+import logoImg from '../../assets/12.jpeg'
 
 const PAGE_HEADERS: Record<string, { title: string; subtitle: string }> = {
     '/': { title: 'Overview', subtitle: 'Real-time summary of all drain sensors' },
@@ -72,10 +73,13 @@ export default function DashboardLayout() {
         <div className={`${styles.shell} ${collapsed ? styles.collapsed : ''}`}>
             {/* ── Sidebar ─────────────────────────────────── */}
             <aside className={styles.sidebar}>
-                <div className={styles.brand}>
-                    <span className={styles.brandIcon}>💧</span>
-                    {!collapsed && <span className={styles.brandName}>SmartDrain</span>}
-                </div>
+                <Link to="/" className={styles.brand}>
+                    {collapsed ? (
+                        <span className={styles.brandIcon}>💧</span>
+                    ) : (
+                        <img src={logoImg} alt="SmartDrain Logo" className={styles.brandLogo} />
+                    )}
+                </Link>
 
                 <nav className={styles.nav}>
                     {NAV_ITEMS.map(({ to, icon, label }) => (

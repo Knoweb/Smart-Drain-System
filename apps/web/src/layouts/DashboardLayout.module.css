@@ -29,9 +29,12 @@
 .brand {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    margin-bottom: var(--space-6);
+    padding: var(--space-4) var(--space-4) var(--space-2) var(--space-4);
+    margin-bottom: var(--space-4);
+    min-height: 48px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
 .brandIcon {
@@ -39,12 +42,14 @@
     flex-shrink: 0;
 }
 
-.brandName {
-    font-family: var(--font-heading);
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    white-space: nowrap;
+.brandLogo {
+    width: 100%;
+    max-width: 200px; /* Increased to allow the text to render larger and sharper */
+    height: auto;
+    display: block;
+    object-fit: contain;
+    object-position: left center;
+    border-radius: 8px;
 }
 
 /* ── Nav items ───────────────────────────────────────────────────────── */
