@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, FlatList, View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StyleSheet, FlatList, View, Text, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { IconSymbol } from '../../components/ui/icon-symbol';
 
@@ -27,6 +27,18 @@ export default function AlertsScreen() {
       .limit(30);
       
     if (data) setAlerts(data);
+  };
+
+  const markResolved = async (id: string) => {
+    const { error } = await supabase
+      .from('alerts')
+      .update({ is_resolved: true })
+      .eq('id', id);
+    if (!error) {
+      fetchAlerts();
+    } else {
+      Alert.alert('Error', 'Failed to resolve alert');
+    }
   };
 
   return (
@@ -58,7 +70,7 @@ export default function AlertsScreen() {
               {item.is_resolved ? (
                 <Text style={styles.resolvedText}>✓ Resolved</Text>
               ) : (
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => markResolved(item.id)}>
                   <Text style={styles.markResolvedText}>Mark Resolved</Text>
                 </TouchableOpacity>
               )}
