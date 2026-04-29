@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, ScrollView, Modal, Share, Alert } from 'react-native';
 import { supabase } from '../../lib/supabase';
+import { useThemeColors } from '../../hooks/useThemeColors';
 
 export default function ReportsScreen() {
+  const theme = useThemeColors();
   const [readings, setReadings] = useState<any[]>([]);
   const [devices, setDevices] = useState<any[]>([]);
   const [timeRange, setTimeRange] = useState('Last 24 Hours');
@@ -87,46 +89,46 @@ export default function ReportsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Text style={styles.title}>Reports</Text>
-          <Text style={styles.subtitle}>Export historical sensor data as CSV or PDF</Text>
+          <Text style={[styles.title, { color: theme.textMain }]}>Reports</Text>
+          <Text style={[styles.subtitle, { color: theme.textSub }]}>Export historical sensor data as CSV or PDF</Text>
         </View>
 
-        <View style={styles.filterSection}>
+        <View style={[styles.filterSection, { backgroundColor: theme.card }]}>
           <View style={styles.filterRow}>
             <TouchableOpacity style={styles.dropdown} onPress={() => setShowTimeModal(true)}>
-              <Text style={styles.dropdownLabel}>TIME RANGE</Text>
-              <Text style={styles.dropdownValue}>{timeRange} ▾</Text>
+              <Text style={[styles.dropdownLabel, { color: theme.textSub }]}>TIME RANGE</Text>
+              <Text style={[styles.dropdownValue, { color: theme.textMain, borderColor: theme.border }]}>{timeRange} ▾</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.dropdown} onPress={() => setShowDeviceModal(true)}>
-              <Text style={styles.dropdownLabel}>IOT DEVICE</Text>
-              <Text style={styles.dropdownValue}>{selectedDevice} ▾</Text>
+              <Text style={[styles.dropdownLabel, { color: theme.textSub }]}>IOT DEVICE</Text>
+              <Text style={[styles.dropdownValue, { color: theme.textMain, borderColor: theme.border }]}>{selectedDevice} ▾</Text>
             </TouchableOpacity>
           </View>
           
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.exportBtn} onPress={handleExportCSV}>
-              <Text style={styles.exportBtnText}>↓ Export CSV</Text>
+            <TouchableOpacity style={[styles.exportBtn, { backgroundColor: theme.activeBtn, borderColor: theme.border }]} onPress={handleExportCSV}>
+              <Text style={[styles.exportBtnText, { color: theme.textMain }]}>↓ Export CSV</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.exportBtn} onPress={handleExportPDF}>
-              <Text style={styles.exportBtnText}>📄 Export PDF</Text>
+            <TouchableOpacity style={[styles.exportBtn, { backgroundColor: theme.activeBtn, borderColor: theme.border }]} onPress={handleExportPDF}>
+              <Text style={[styles.exportBtnText, { color: theme.textMain }]}>📄 Export PDF</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Data Summary ({readings.length} records)</Text>
+        <View style={[styles.card, { backgroundColor: theme.card }]}>
+          <Text style={[styles.cardTitle, { color: theme.textMain }]}>Data Summary ({readings.length} records)</Text>
           {readings.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No readings found for the selected filters.</Text>
+              <Text style={[styles.emptyText, { color: theme.textSub }]}>No readings found for the selected filters.</Text>
             </View>
           ) : (
             <View style={styles.summaryContainer}>
-               <Text style={styles.summaryText}>First reading: {new Date(readings[readings.length - 1].recorded_at).toLocaleString()}</Text>
-               <Text style={styles.summaryText}>Last reading: {new Date(readings[0].recorded_at).toLocaleString()}</Text>
-               <Text style={styles.summaryText}>Total Data Points: {readings.length}</Text>
+               <Text style={[styles.summaryText, { color: theme.textMain }]}>First reading: {new Date(readings[readings.length - 1].recorded_at).toLocaleString()}</Text>
+               <Text style={[styles.summaryText, { color: theme.textMain }]}>Last reading: {new Date(readings[0].recorded_at).toLocaleString()}</Text>
+               <Text style={[styles.summaryText, { color: theme.textMain }]}>Total Data Points: {readings.length}</Text>
             </View>
           )}
         </View>
@@ -135,11 +137,11 @@ export default function ReportsScreen() {
       {/* Time Modal */}
       <Modal visible={showTimeModal} transparent animationType="fade">
         <View style={styles.modalBg}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Time Range</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.textMain }]}>Select Time Range</Text>
             {['Last 24 Hours', 'Last 7 Days', 'All Time'].map(opt => (
-              <TouchableOpacity key={opt} style={styles.modalOpt} onPress={() => { setTimeRange(opt); setShowTimeModal(false); }}>
-                <Text style={styles.modalOptText}>{opt}</Text>
+              <TouchableOpacity key={opt} style={[styles.modalOpt, { borderBottomColor: theme.border }]} onPress={() => { setTimeRange(opt); setShowTimeModal(false); }}>
+                <Text style={[styles.modalOptText, { color: theme.textMain }]}>{opt}</Text>
               </TouchableOpacity>
             ))}
             <TouchableOpacity style={styles.modalCancel} onPress={() => setShowTimeModal(false)}>
@@ -152,15 +154,15 @@ export default function ReportsScreen() {
       {/* Device Modal */}
       <Modal visible={showDeviceModal} transparent animationType="fade">
         <View style={styles.modalBg}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select IoT Device</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.textMain }]}>Select IoT Device</Text>
             <ScrollView style={{maxHeight: 300}}>
-              <TouchableOpacity style={styles.modalOpt} onPress={() => { setSelectedDevice('All Devices'); setShowDeviceModal(false); }}>
-                <Text style={styles.modalOptText}>All Devices</Text>
+              <TouchableOpacity style={[styles.modalOpt, { borderBottomColor: theme.border }]} onPress={() => { setSelectedDevice('All Devices'); setShowDeviceModal(false); }}>
+                <Text style={[styles.modalOptText, { color: theme.textMain }]}>All Devices</Text>
               </TouchableOpacity>
               {devices.map(d => (
-                <TouchableOpacity key={d.id} style={styles.modalOpt} onPress={() => { setSelectedDevice(d.name); setShowDeviceModal(false); }}>
-                  <Text style={styles.modalOptText}>{d.name} ({d.drains?.name})</Text>
+                <TouchableOpacity key={d.id} style={[styles.modalOpt, { borderBottomColor: theme.border }]} onPress={() => { setSelectedDevice(d.name); setShowDeviceModal(false); }}>
+                  <Text style={[styles.modalOptText, { color: theme.textMain }]}>{d.name} ({d.drains?.name})</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -175,30 +177,30 @@ export default function ReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 40 },
   header: { marginBottom: 20, marginTop: 40 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1a202c' },
-  subtitle: { fontSize: 14, color: '#718096', marginTop: 4 },
-  filterSection: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
+  title: { fontSize: 24, fontWeight: 'bold' },
+  subtitle: { fontSize: 14, marginTop: 4 },
+  filterSection: { padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
   filterRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   dropdown: { flex: 1, marginRight: 8 },
-  dropdownLabel: { fontSize: 10, fontWeight: 'bold', color: '#a0aec0', marginBottom: 4 },
-  dropdownValue: { fontSize: 14, color: '#2d3748', padding: 10, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8 },
+  dropdownLabel: { fontSize: 10, fontWeight: 'bold', marginBottom: 4 },
+  dropdownValue: { fontSize: 14, padding: 10, borderWidth: 1, borderRadius: 8 },
   actionRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
-  exportBtn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', backgroundColor: '#f7fafc', marginLeft: 8 },
-  exportBtnText: { fontSize: 14, color: '#4a5568', fontWeight: '500' },
-  card: { backgroundColor: '#ffffff', padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
-  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#2d3748', marginBottom: 24 },
+  exportBtn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, marginLeft: 8 },
+  exportBtnText: { fontSize: 14, fontWeight: '500' },
+  card: { padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
+  cardTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 24 },
   emptyState: { height: 100, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { fontSize: 14, color: '#a0aec0' },
+  emptyText: { fontSize: 14 },
   summaryContainer: { paddingTop: 10 },
-  summaryText: { fontSize: 14, color: '#4a5568', marginBottom: 8 },
+  summaryText: { fontSize: 14, marginBottom: 8 },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { backgroundColor: '#fff', width: '100%', borderRadius: 12, padding: 20 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, color: '#2d3748' },
-  modalOpt: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#edf2f7' },
-  modalOptText: { fontSize: 16, color: '#4a5568' },
+  modalContent: { width: '100%', borderRadius: 12, padding: 20 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  modalOpt: { paddingVertical: 12, borderBottomWidth: 1 },
+  modalOptText: { fontSize: 16 },
   modalCancel: { marginTop: 16, alignItems: 'center', paddingVertical: 12 },
   modalCancelText: { fontSize: 16, fontWeight: 'bold', color: '#e53e3e' }
 });

@@ -1,55 +1,67 @@
-import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity, ScrollView, Switch, Appearance, Platform, Alert } from 'react-native';
 import { supabase } from '../../lib/supabase';
-import { useState } from 'react';
+import { useThemeColors } from '../../hooks/useThemeColors';
 
 export default function SettingsScreen() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const theme = useThemeColors();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
 
+  const toggleTheme = (value: boolean) => {
+    if (Platform.OS === 'web') {
+      alert("Theme toggling is currently only supported on mobile devices (iOS/Android).");
+      return;
+    }
+    try {
+      Appearance.setColorScheme(value ? 'dark' : 'light');
+    } catch (e) {
+      console.log('setColorScheme error:', e);
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.subtitle}>Configure system preferences and alerts</Text>
+          <Text style={[styles.title, { color: theme.textMain }]}>Settings</Text>
+          <Text style={[styles.subtitle, { color: theme.textSub }]}>Configure system preferences and alerts</Text>
         </View>
         
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.card }]}>
           <View style={styles.cardHeaderRow}>
             <View style={styles.cardTextCol}>
-              <Text style={styles.cardTitle}>Appearance Options</Text>
-              <Text style={styles.cardDesc}>Toggle between light and dark modes. Dark mode is recommended for monitoring dashboards.</Text>
+              <Text style={[styles.cardTitle, { color: theme.textMain }]}>Appearance Options</Text>
+              <Text style={[styles.cardDesc, { color: theme.textSub }]}>Toggle between light and dark modes. Dark mode is recommended for monitoring dashboards.</Text>
             </View>
-            <View style={styles.switchContainer}>
-              <Text style={styles.switchText}>{isDarkMode ? 'Dark' : 'Light'}</Text>
-              <Switch value={isDarkMode} onValueChange={setIsDarkMode} />
+            <View style={[styles.switchContainer, { backgroundColor: theme.bg }]}>
+              <Text style={[styles.switchText, { color: theme.textMain }]}>{theme.isDark ? 'Dark' : 'Light'}</Text>
+              <Switch value={theme.isDark} onValueChange={toggleTheme} />
             </View>
           </View>
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.card }]}>
           <View style={styles.cardHeaderRow}>
             <View style={styles.cardTextCol}>
-              <Text style={styles.cardTitle}>Alert Thresholds</Text>
-              <Text style={styles.cardDesc}>Set the water level percentages for Warning and Critical alerts.</Text>
+              <Text style={[styles.cardTitle, { color: theme.textMain }]}>Alert Thresholds</Text>
+              <Text style={[styles.cardDesc, { color: theme.textSub }]}>Set the water level percentages for Warning and Critical alerts.</Text>
             </View>
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Configure Limits (Coming soon)</Text>
+            <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: theme.activeBtn, borderColor: theme.border }]}>
+              <Text style={[styles.secondaryButtonText, { color: theme.textMain }]}>Configure Limits (Coming soon)</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.card }]}>
           <View style={styles.cardHeaderRow}>
             <View style={styles.cardTextCol}>
-              <Text style={styles.cardTitle}>Notification Preferences</Text>
-              <Text style={styles.cardDesc}>Manage email and SMS alerts for critical drain events.</Text>
+              <Text style={[styles.cardTitle, { color: theme.textMain }]}>Notification Preferences</Text>
+              <Text style={[styles.cardDesc, { color: theme.textSub }]}>Manage email and SMS alerts for critical drain events.</Text>
             </View>
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Manage Notifications</Text>
+            <TouchableOpacity style={[styles.secondaryButton, { backgroundColor: theme.activeBtn, borderColor: theme.border }]}>
+              <Text style={[styles.secondaryButtonText, { color: theme.textMain }]}>Manage Notifications</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -63,20 +75,20 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1 },
   scroll: { padding: 16, paddingBottom: 40 },
   header: { marginBottom: 24, marginTop: 40 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1a202c' },
-  subtitle: { fontSize: 14, color: '#718096', marginTop: 4 },
-  card: { backgroundColor: '#ffffff', padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
+  title: { fontSize: 24, fontWeight: 'bold' },
+  subtitle: { fontSize: 14, marginTop: 4 },
+  card: { padding: 16, borderRadius: 12, marginBottom: 16, elevation: 1 },
   cardHeaderRow: { flexDirection: 'column' },
   cardTextCol: { marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#2d3748', marginBottom: 4 },
-  cardDesc: { fontSize: 14, color: '#718096', lineHeight: 20 },
-  switchContainer: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: '#edf2f7', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
-  switchText: { marginRight: 8, fontSize: 14, fontWeight: 'bold', color: '#4a5568' },
-  secondaryButton: { alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: '#f7fafc', borderWidth: 1, borderColor: '#e2e8f0' },
-  secondaryButtonText: { fontSize: 14, color: '#4a5568', fontWeight: '500' },
+  cardTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  cardDesc: { fontSize: 14, lineHeight: 20 },
+  switchContainer: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20 },
+  switchText: { marginRight: 8, fontSize: 14, fontWeight: 'bold' },
+  secondaryButton: { alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1 },
+  secondaryButtonText: { fontSize: 14, fontWeight: '500' },
   signOutButton: { backgroundColor: '#e53e3e', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 24 },
   signOutText: { color: '#ffffff', fontWeight: 'bold', fontSize: 16 }
 });

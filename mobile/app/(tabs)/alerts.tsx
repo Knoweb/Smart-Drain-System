@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, FlatList, View, Text, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { IconSymbol } from '../../components/ui/icon-symbol';
+import { useThemeColors } from '../../hooks/useThemeColors';
 
 export default function AlertsScreen() {
+  const theme = useThemeColors();
   const [alerts, setAlerts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -42,31 +44,31 @@ export default function AlertsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>System Alerts</Text>
-        <Text style={styles.subtitle}>Active and historical system alerts</Text>
+        <Text style={[styles.title, { color: theme.textMain }]}>System Alerts</Text>
+        <Text style={[styles.subtitle, { color: theme.textSub }]}>Active and historical system alerts</Text>
       </View>
       <FlatList
         contentContainerStyle={styles.list}
         data={alerts}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View style={[styles.card, item.is_resolved ? styles.resolvedCard : styles.activeCard]}>
+          <View style={[styles.card, { backgroundColor: theme.card }, item.is_resolved ? styles.resolvedCard : styles.activeCard]}>
             <View style={styles.iconContainer}>
-              <IconSymbol name={item.alert_type.includes('BATTERY') ? 'bolt.fill' : 'exclamationmark.triangle.fill'} size={24} color={item.is_resolved ? '#a0aec0' : '#fc8181'} />
+              <IconSymbol name={item.alert_type.includes('BATTERY') ? 'bolt.fill' : 'exclamationmark.triangle.fill'} size={24} color={item.is_resolved ? theme.iconColor : '#fc8181'} />
             </View>
             <View style={styles.contentContainer}>
-              <Text style={styles.drainDeviceText}>
+              <Text style={[styles.drainDeviceText, { color: theme.textMain }]}>
                 <Text style={{fontWeight: 'bold'}}>{item.iot_devices?.drains?.name || 'Unknown Drain'}</Text> › {item.iot_devices?.name || 'Unknown Device'}
               </Text>
-              <Text style={[styles.alertType, { color: item.is_resolved ? '#a0aec0' : '#fc8181' }]}>
+              <Text style={[styles.alertType, { color: item.is_resolved ? theme.iconColor : '#fc8181' }]}>
                 {item.alert_type.replace(/_/g, ' ')}
               </Text>
-              <Text style={styles.message}>{item.message}</Text>
+              <Text style={[styles.message, { color: theme.textSub }]}>{item.message}</Text>
             </View>
             <View style={styles.actionContainer}>
-              <Text style={styles.time}>{new Date(item.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</Text>
+              <Text style={[styles.time, { color: theme.textSub }]}>{new Date(item.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</Text>
               {item.is_resolved ? (
                 <Text style={styles.resolvedText}>✓ Resolved</Text>
               ) : (
@@ -83,21 +85,21 @@ export default function AlertsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1 },
   header: { padding: 16, paddingTop: 60, paddingBottom: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#1a202c' },
-  subtitle: { fontSize: 14, color: '#718096', marginTop: 4 },
+  title: { fontSize: 24, fontWeight: 'bold' },
+  subtitle: { fontSize: 14, marginTop: 4 },
   list: { paddingHorizontal: 16, paddingBottom: 40 },
-  card: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12, elevation: 1 },
+  card: { flexDirection: 'row', borderRadius: 8, padding: 12, marginBottom: 12, elevation: 1 },
   activeCard: { borderLeftWidth: 4, borderLeftColor: '#fc8181' },
   resolvedCard: { borderLeftWidth: 4, borderLeftColor: '#cbd5e0', opacity: 0.7 },
   iconContainer: { width: 40, alignItems: 'center', justifyContent: 'center' },
   contentContainer: { flex: 1, paddingHorizontal: 8 },
-  drainDeviceText: { fontSize: 14, color: '#2d3748', marginBottom: 2 },
+  drainDeviceText: { fontSize: 14, marginBottom: 2 },
   alertType: { fontSize: 12, fontWeight: 'bold', marginBottom: 4 },
-  message: { fontSize: 13, color: '#4a5568' },
+  message: { fontSize: 13 },
   actionContainer: { alignItems: 'flex-end', justifyContent: 'space-between', width: 90 },
-  time: { fontSize: 10, color: '#a0aec0', textAlign: 'right' },
+  time: { fontSize: 10, textAlign: 'right' },
   resolvedText: { fontSize: 12, color: '#38a169', fontWeight: 'bold' },
   markResolvedText: { fontSize: 12, color: '#2b6cb0', fontWeight: 'bold' }
 });
