@@ -7,11 +7,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/alerts")
 public class AlertController {
 
+    private final com.smartdrain.alert.service.AlertService alertService;
+
+    public AlertController(com.smartdrain.alert.service.AlertService alertService) {
+        this.alertService = alertService;
+    }
+
     @PostMapping("/trigger")
-    public ResponseEntity<String> triggerAlert(@RequestBody String alertData) {
-        // TODO: Evaluate thresholds and send notifications (Email, SMS, Expo Push)
-        System.out.println("Alert triggered: " + alertData);
-        return ResponseEntity.ok("Alert received and processing");
+    public ResponseEntity<String> triggerAlert(@RequestBody com.smartdrain.alert.model.TelemetryPayload payload) {
+        System.out.println("Alert payload received for drain: " + payload.getDrainName());
+        alertService.processTelemetry(payload);
+        return ResponseEntity.ok("Alert received and processed successfully");
     }
 
     @GetMapping("/status")
