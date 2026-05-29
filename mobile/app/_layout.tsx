@@ -4,6 +4,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import { useFonts } from 'expo-font';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '../lib/supabase';
 
@@ -22,17 +24,26 @@ export default function RootLayout() {
   const [session, setSession] = useState<any>(null);
   const [isReady, setIsReady] = useState(false);
 
+  const [loaded, error] = useFonts({
+    ...MaterialIcons.font,
+  });
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsReady(true);
-      SplashScreen.hideAsync();
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
   }, []);
+
+  useEffect(() => {
+    if ((loaded || error) && isReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error, isReady]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -48,7 +59,7 @@ export default function RootLayout() {
     }
   }, [session, isReady, segments]);
 
-  if (!isReady) return null;
+  if (!isReady || (!loaded && !error)) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

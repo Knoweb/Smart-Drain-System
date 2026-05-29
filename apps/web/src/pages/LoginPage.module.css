@@ -277,3 +277,27 @@
   /* Darker blue on hover */
   text-decoration: underline;
 }
+
+.forgotPasswordLink {
+  text-align: right;
+  margin-bottom: 1rem;
+  margin-top: -0.5rem;
+}
+
+.forgotButton {
+  background: none;
+  border: none;
+  color: #2563eb;
+  /* Prominent blue for forgot button */
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s;
+}
+
+.forgotButton:hover {
+  color: #1e40af;
+  /* Darker blue on hover */
+  text-decoration: underline;
+}

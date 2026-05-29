@@ -7,6 +7,7 @@ import logoImg from '../../assets/logo.jpeg';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -68,6 +69,26 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setSuccessMsg('Password reset email sent! Check your inbox.');
+      setEmail('');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during password reset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.pageWrapper}>
       {/* Visual Left/Right Section depending on screen size */}
@@ -90,16 +111,42 @@ export default function LoginPage() {
         </div>
 
         <h2 className={styles.title}>
-          {isLogin ? 'Welcome Back' : 'Create an Account'}
+          {isForgotPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create an Account'}
         </h2>
         <p className={styles.subtitle}>
-          {isLogin ? 'Please enter your credentials to access the dashboard.' : 'Sign up to monitor telemetry data.'}
+          {isForgotPassword ? 'Enter your email to receive a password reset link.' : isLogin ? 'Please enter your credentials to access the dashboard.' : 'Sign up to monitor telemetry data.'}
         </p>
 
         {error && <div className={styles.errorMessage}>{error}</div>}
         {successMsg && <div className={styles.successMessage}>{successMsg}</div>}
 
-        <form onSubmit={handleSubmit}>
+        {isForgotPassword ? (
+          // Forgot Password Form
+          <form onSubmit={handleForgotPassword}>
+            <div className={styles.formGroup}>
+              <label htmlFor="resetEmail" className={styles.label}>Email Address</label>
+              <input
+                id="resetEmail"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={styles.input}
+                placeholder="admin@smartdrain.com"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading}
+            >
+              {loading ? 'Sending...' : 'Send Reset Link'}
+            </button>
+          </form>
+        ) : (
+          // Login/Sign Up Form
+          <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className={styles.formGroup}>
               <label htmlFor="username" className={styles.label}>Username</label>
@@ -200,6 +247,18 @@ export default function LoginPage() {
             </div>
           )}
 
+          <div className={styles.forgotPasswordLink}>
+            {isLogin && !isForgotPassword && (
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(true)}
+                className={styles.forgotButton}
+              >
+                Forgot Password?
+              </button>
+            )}
+          </div>
+
           <button
             type="submit"
             className={styles.submitButton}
@@ -208,16 +267,43 @@ export default function LoginPage() {
             {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
           </button>
         </form>
+        )}
 
         <div className={styles.toggleMode}>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className={styles.toggleButton}
-          >
-            {isLogin ? 'Sign Up' : 'Log In'}
-          </button>
+          {isForgotPassword ? (
+            <>
+              Remember your password?{' '}
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(false)}
+                className={styles.toggleButton}
+              >
+                Back to Login
+              </button>
+            </>
+          ) : isLogin ? (
+            <>
+              Don't have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className={styles.toggleButton}
+              >
+                Sign Up
+              </button>
+            </>
+          ) : (
+            <>
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className={styles.toggleButton}
+              >
+                Log In
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
