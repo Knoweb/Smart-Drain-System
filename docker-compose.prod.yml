@@ -1,5 +1,3 @@
-version: "3.9"
-
 # ─────────────────────────────────────────────────────────────────────────────
 #  Smart Drain System — Production Docker Compose
 #  Droplet IP : 167.71.199.20
