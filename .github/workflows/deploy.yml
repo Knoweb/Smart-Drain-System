@@ -1,0 +1,183 @@
+name: 🚀 Deploy Smart Drain System
+
+on:
+  push:
+    branches:
+      - main          # Production deploys on push to main
+  pull_request:
+    branches:
+      - main          # PRs only run build + test, no deploy
+
+env:
+  REGISTRY: ghcr.io
+  DROPLET_IP: 167.71.199.20
+  DEPLOY_USER: root
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── Job 1: Build & Push all Docker images ──────────────────────────────────
+  build:
+    name: 🔨 Build & Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write     # needed to push to GHCR
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔑 Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Generate image tag (short SHA)
+        id: meta
+        run: echo "version=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── Build: React Web Frontend ──────────────────────────────────────────
+      - name: 🌐 Build & Push Web Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-web:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-web:latest
+          build-args: |
+            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Build: API Gateway ─────────────────────────────────────────────────
+      - name: ⚙️ Build & Push API Gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services
+          file: ./services/api-gateway/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-api-gateway:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-api-gateway:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Build: Telemetry Ingestion ─────────────────────────────────────────
+      - name: 📡 Build & Push Telemetry Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services
+          file: ./services/telemetry-ingestion/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-telemetry:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-telemetry:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Build: Alert Notification ──────────────────────────────────────────
+      - name: 🔔 Build & Push Alert Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services
+          file: ./services/alert-notification/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-alerts:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-alerts:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Job 2: Deploy to DigitalOcean Droplet (main branch only) ───────────────
+  deploy:
+    name: 🌊 Deploy to DigitalOcean
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout code (for docker-compose file)
+        uses: actions/checkout@v4
+
+      - name: 📦 Copy docker-compose to droplet
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.DROPLET_IP }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.DROPLET_SSH_PRIVATE_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "/opt/smart-drain"
+
+      - name: 🚀 Deploy with zero downtime
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.DROPLET_IP }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.DROPLET_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            cd /opt/smart-drain
+
+            # Log in to GHCR on the droplet
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+              -u ${{ github.actor }} --password-stdin
+
+            # Write .env file from secrets (never stored in git)
+            cat > .env << 'EOF'
+            GITHUB_REPOSITORY=${{ github.repository }}
+            IMAGE_TAG=${{ needs.build.outputs.image_tag }}
+            TELEMETRY_DB_URL=${{ secrets.TELEMETRY_DB_URL }}
+            ALERT_DB_URL=${{ secrets.ALERT_DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            MAIL_HOST=${{ secrets.MAIL_HOST }}
+            MAIL_PORT=${{ secrets.MAIL_PORT }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            EOF
+
+            # Pull all new images BEFORE stopping anything (zero-downtime prep)
+            docker compose -f docker-compose.prod.yml pull
+
+            # Rolling update: start new containers before stopping old ones
+            # Each service has --update-order start-first in compose config
+            docker compose -f docker-compose.prod.yml up -d \
+              --remove-orphans \
+              --force-recreate
+
+            # Wait for health checks to pass
+            echo "⏳ Waiting for services to be healthy..."
+            sleep 30
+
+            # Verify all containers are running
+            docker compose -f docker-compose.prod.yml ps
+
+            # Clean up old unused images to save disk space
+            docker image prune -f
+
+            echo "✅ Deployment complete! Smart Drain is live at http://${{ env.DROPLET_IP }}"
+
+      - name: 🩺 Health check after deploy
+        run: |
+          echo "Checking live site health..."
+          sleep 10
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ env.DROPLET_IP }}/health || echo "000")
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Health check passed — site is live!"
+          else
+            echo "⚠️ Health check returned HTTP $STATUS — check droplet logs"
+            exit 1
+          fi

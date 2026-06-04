@@ -1,0 +1,9 @@
+**/target/
+**/.git/
+**/*.md
+**/node_modules/
+.github/
+scripts/
+apps/
+database/
+mobile/

@@ -1,8 +1,31 @@
 # Smart Drain System
-node_modules
-dist
+
+# Node
+node_modules/
+dist/
 .env
 .env.local
 .env.*.local
+
+# Java / Maven build outputs
+**/target/
+*.jar
+*.war
+*.class
+
+# Logs
 *.log
+logs/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Docker secrets (never commit)
+.env.prod
+/opt/
+
+# IDE
+.idea/
+*.iml
+.vscode/

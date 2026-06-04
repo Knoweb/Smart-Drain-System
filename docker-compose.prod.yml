@@ -1,0 +1,114 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Smart Drain System — Production Docker Compose
+#  Droplet IP : 167.71.199.20
+#  Zero-downtime via rolling updates (--update-order start-first)
+# ─────────────────────────────────────────────────────────────────────────────
+
+networks:
+  smart-drain-net:
+    driver: bridge
+
+services:
+
+  # ── 1. React Frontend (Nginx) ──────────────────────────────────────────────
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY}/smart-drain-web:${IMAGE_TAG:-latest}
+    container_name: smart-drain-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - smart-drain-net
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      update_config:
+        order: start-first       # Zero-downtime: start new before stopping old
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        order: stop-first
+
+  # ── 2. API Gateway (Spring Cloud Gateway — port 8080) ─────────────────────
+  api-gateway:
+    image: ghcr.io/${GITHUB_REPOSITORY}/smart-drain-api-gateway:${IMAGE_TAG:-latest}
+    container_name: smart-drain-api-gateway
+    restart: unless-stopped
+    networks:
+      - smart-drain-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://telemetry-ingestion:8081
+      - SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://alert-notification:8082
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+
+  # ── 3. Telemetry Ingestion Service (port 8081) ────────────────────────────
+  telemetry-ingestion:
+    image: ghcr.io/${GITHUB_REPOSITORY}/smart-drain-telemetry:${IMAGE_TAG:-latest}
+    container_name: smart-drain-telemetry
+    restart: unless-stopped
+    networks:
+      - smart-drain-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=${TELEMETRY_DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+
+  # ── 4. Alert & Notification Service (port 8082) ───────────────────────────
+  alert-notification:
+    image: ghcr.io/${GITHUB_REPOSITORY}/smart-drain-alerts:${IMAGE_TAG:-latest}
+    container_name: smart-drain-alerts
+    restart: unless-stopped
+    networks:
+      - smart-drain-net
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=${ALERT_DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_MAIL_HOST=${MAIL_HOST}
+      - SPRING_MAIL_PORT=${MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+        delay: 10s
