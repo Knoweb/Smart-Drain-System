@@ -8,10 +8,10 @@ spring:
     gateway:
       routes:
         - id: telemetry-ingestion
-          uri: http://localhost:8081
+          uri: ${TELEMETRY_INGESTION_URI:http://localhost:8081}
           predicates:
             - Path=/api/telemetry/**
         - id: alert-notification
-          uri: http://localhost:8082
+          uri: ${ALERT_NOTIFICATION_URI:http://localhost:8082}
           predicates:
             - Path=/api/alerts/**

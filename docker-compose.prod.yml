@@ -45,10 +45,15 @@ services:
       - smart-drain-net
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://telemetry-ingestion:8081
-      - SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://alert-notification:8082
+      - TELEMETRY_INGESTION_URI=http://telemetry-ingestion:8081
+      - ALERT_NOTIFICATION_URI=http://alert-notification:8082
+    depends_on:
+      telemetry-ingestion:
+        condition: service_healthy
+      alert-notification:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/telemetry/status"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -72,7 +77,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8081/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/api/telemetry/status"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -100,7 +105,7 @@ services:
       - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8082/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8082/api/alerts/status"]
       interval: 30s
       timeout: 10s
       retries: 5
