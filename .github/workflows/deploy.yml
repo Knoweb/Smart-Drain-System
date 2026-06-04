@@ -26,6 +26,7 @@ jobs:
 
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
+      repo_lower: ${{ steps.lowercase.outputs.repo }}
 
     steps:
       - name: 📥 Checkout code
@@ -42,6 +43,10 @@ jobs:
         id: meta
         run: echo "version=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
 
+      - name: 🔡 Lowercase repository name (Docker requires lowercase)
+        id: lowercase
+        run: echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -53,8 +58,8 @@ jobs:
           file: ./apps/web/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-web:${{ steps.meta.outputs.version }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-web:latest
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-web:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-web:latest
           build-args: |
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
@@ -69,8 +74,8 @@ jobs:
           file: ./services/api-gateway/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-api-gateway:${{ steps.meta.outputs.version }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-api-gateway:latest
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-api-gateway:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-api-gateway:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -82,8 +87,8 @@ jobs:
           file: ./services/telemetry-ingestion/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-telemetry:${{ steps.meta.outputs.version }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-telemetry:latest
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-telemetry:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-telemetry:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -95,8 +100,8 @@ jobs:
           file: ./services/alert-notification/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-alerts:${{ steps.meta.outputs.version }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/smart-drain-alerts:latest
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-alerts:${{ steps.meta.outputs.version }}
+            ${{ env.REGISTRY }}/${{ steps.lowercase.outputs.repo }}/smart-drain-alerts:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -137,7 +142,7 @@ jobs:
 
             # Write .env file from secrets (never stored in git)
             cat > .env << 'EOF'
-            GITHUB_REPOSITORY=${{ github.repository }}
+            GITHUB_REPOSITORY=${{ needs.build.outputs.repo_lower }}
             IMAGE_TAG=${{ needs.build.outputs.image_tag }}
             TELEMETRY_DB_URL=${{ secrets.TELEMETRY_DB_URL }}
             ALERT_DB_URL=${{ secrets.ALERT_DB_URL }}
