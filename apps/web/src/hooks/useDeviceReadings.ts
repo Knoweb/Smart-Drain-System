@@ -1,46 +1,67 @@
 /**
  * useDeviceReadings — src/hooks/useDeviceReadings.ts
  * ---------------------------------------------------------------------------
- * Fetches the last N sensor readings for a specific IoT device.
+ * Fetches the last N sensor readings for a specific device_id.
  * Used by SensorCard to render a sparkline trend chart.
  *
- * Unlike useLatestReading (real-time single row), this is a one-time fetch
- * of historical sparkline data — no Realtime subscription needed.
- * Re-fetches whenever deviceId changes.
+ * Reads from Firebase RTDB, filters by device_id client-side,
+ * returns readings sorted oldest→newest so the sparkline goes left→right.
  */
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { ref, onValue, off } from 'firebase/database'
+import { db } from '@/lib/firebase'
+import { toSensorReading } from '@/lib/firebaseData'
 import type { SensorReading } from '@/types'
 
 export function useDeviceReadings(deviceId: string | null, limit = 20) {
-    const [readings, setReadings] = useState<SensorReading[]>([])
-    const [loading, setLoading] = useState(false)
+  const [readings, setReadings] = useState<SensorReading[]>([])
+  const [loading, setLoading]   = useState(false)
 
-    useEffect(() => {
-        if (!deviceId) {
+  useEffect(() => {
+    if (!deviceId) {
+      setReadings([])
+      return
+    }
+
+    setLoading(true)
+
+    const dbRef = ref(db, '/sensor_logs')
+
+    const unsubscribe = onValue(
+      dbRef,
+      (snapshot) => {
+        try {
+          const raw = snapshot.val()
+          if (!raw) {
             setReadings([])
+            setLoading(false)
             return
+          }
+
+          const entries: SensorReading[] = Object.entries(raw)
+            .map(([key, val]) => toSensorReading(key, val as any))
+            .filter(r => r.device_id === deviceId)
+            // Sort newest first, then take the `limit` most recent
+            .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())
+            .slice(0, limit)
+            // Reverse so sparkline goes oldest → newest (left → right)
+            .reverse()
+
+          setReadings(entries)
+        } catch {
+          setReadings([])
+        } finally {
+          setLoading(false)
         }
+      },
+      () => {
+        setLoading(false)
+      }
+    )
 
-        let cancelled = false
-        setLoading(true)
+    return () => off(dbRef, 'value', unsubscribe as any)
+  }, [deviceId, limit])
 
-        supabase
-            .from('sensor_readings')
-            .select('id, device_id, water_level_pct, recorded_at')
-            .eq('device_id', deviceId)
-            .order('recorded_at', { ascending: false })
-            .limit(limit)
-            .then(({ data }) => {
-                if (cancelled) return
-                // Reverse so the sparkline goes oldest → newest (left → right)
-                setReadings(((data ?? []) as SensorReading[]).reverse())
-                setLoading(false)
-            })
-
-        return () => { cancelled = true }
-    }, [deviceId, limit])
-
-    return { readings, loading }
+  return { readings, loading }
 }

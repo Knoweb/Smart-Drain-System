@@ -1,66 +1,75 @@
 /**
  * useDrains — src/hooks/useDrains.ts
  * ---------------------------------------------------------------------------
- * WHAT IS A CUSTOM HOOK?
- * A custom hook is a function that starts with "use" and encapsulates
- * data-fetching logic. Components that call this hook get back the data,
- * loading state, and any error — without caring HOW the data is fetched.
+ * Reads ALL sensor readings from Firebase RTDB and groups them by device_id
+ * to produce a list of Drain objects with nested IoTDevice info.
  *
- * WHY SEPARATE IT FROM THE COMPONENT?
- * - The DrainMap component stays clean — it only handles rendering.
- * - The same hook can be reused by DashboardPage, SensorsPage, etc.
- * - Easy to swap the data source later (e.g. add caching, or switch to REST).
- *
- * HOW IT WORKS:
- * On mount → calls Supabase → stores drains in state → returns to component.
- * Re-fetches automatically if the component re-mounts.
+ * Firebase RTDB uses onValue() which fires immediately AND on every change,
+ * giving us real-time updates for free (no polling needed).
  */
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import type { Drain } from '@/types'
+import { ref, onValue, off } from 'firebase/database'
+import { db } from '@/lib/firebase'
+import { toSensorReading, buildDrains } from '@/lib/firebaseData'
+import type { Drain, SensorReading } from '@/types'
 
 interface UseDrainsResult {
-    drains: Drain[]
-    loading: boolean
-    error: string | null
-    refetch: () => void
+  drains: Drain[]
+  loading: boolean
+  error: string | null
+  refetch: () => void
 }
 
 export function useDrains(): UseDrainsResult {
-    const [drains, setDrains] = useState<Drain[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [tick, setTick] = useState(0) // increment to trigger a refetch
+  const [drains, setDrains]   = useState<Drain[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState<string | null>(null)
+  const [tick, setTick]       = useState(0) // increment to force re-subscribe
 
-    useEffect(() => {
-        let cancelled = false
-        setLoading(true)
-        setError(null)
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
 
-        supabase
-            .from('drains')
-            .select('*, iot_devices(*)')
-            .order('name')
-            .then(({ data, error: sbError }) => {
-                if (cancelled) return
-                if (sbError) {
-                    setError(sbError.message)
-                } else {
-                    setDrains((data ?? []) as Drain[])
-                }
-                setLoading(false)
-            })
+    // Listen to the root of the database where all sensor readings live
+    const dbRef = ref(db, '/sensor_logs')
 
-        // Cleanup: if the component unmounts before the query finishes,
-        // we don't want to call setState on an unmounted component.
-        return () => { cancelled = true }
-    }, [tick])
+    const unsubscribe = onValue(
+      dbRef,
+      (snapshot) => {
+        try {
+          const raw = snapshot.val()
+          if (!raw) {
+            setDrains([])
+            setLoading(false)
+            return
+          }
 
-    return {
-        drains,
-        loading,
-        error,
-        refetch: () => setTick(t => t + 1),
-    }
+          // Convert Firebase object → array of SensorReadings
+          const readings: SensorReading[] = Object.entries(raw).map(([key, val]) =>
+            toSensorReading(key, val as any)
+          )
+
+          setDrains(buildDrains(readings))
+        } catch (e: any) {
+          setError(e.message ?? 'Failed to parse database data')
+        } finally {
+          setLoading(false)
+        }
+      },
+      (err) => {
+        setError(err.message)
+        setLoading(false)
+      }
+    )
+
+    return () => off(dbRef, 'value', unsubscribe as any)
+  }, [tick])
+
+  return {
+    drains,
+    loading,
+    error,
+    refetch: () => setTick(t => t + 1),
+  }
 }

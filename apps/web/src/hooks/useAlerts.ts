@@ -1,55 +1,124 @@
 /**
  * useAlerts — src/hooks/useAlerts.ts
  * ---------------------------------------------------------------------------
- * Fetches alerts and joins the drain name using Supabase foreign keys.
- * Includes a function to mark an alert as resolved.
+ * Derives alerts from Firebase RTDB sensor readings.
+ * Unlike Supabase (which had a separate alerts table), Firebase stores only
+ * raw readings, so we scan them and generate alerts client-side.
+ *
+ * Alert rules:
+ *   HIGH_WATER_LEVEL  → water_level_pct >= 80
+ *   LOW_BATTERY       → battery_level_pct < 20 (and not null)
  */
 
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import type { Alert } from '@/types'
+import { useState, useEffect, useCallback } from 'react'
+import { ref, onValue, off } from 'firebase/database'
+import { db } from '@/lib/firebase'
+import { toSensorReading, deviceLabel } from '@/lib/firebaseData'
+import type { Alert, SensorReading } from '@/types'
+import { ALERT_THRESHOLD_WATER_LEVEL, ALERT_THRESHOLD_BATTERY } from '@/config/constants'
 
-export function useAlerts() {
-    const [alerts, setAlerts] = useState<Alert[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [tick, setTick] = useState(0) // increment to refetch
+/** Build alert objects from a reading that exceeds a threshold */
+function generateAlerts(readings: SensorReading[]): Alert[] {
+  const alerts: Alert[] = []
 
-    useEffect(() => {
-        let cancelled = false
-        setLoading(true)
+  // Group by device, pick the most recent reading per device for status
+  const deviceLatest = new Map<string, SensorReading>()
+  for (const r of readings) {
+    const existing = deviceLatest.get(r.device_id)
+    if (!existing || r.recorded_at > existing.recorded_at) {
+      deviceLatest.set(r.device_id, r)
+    }
+  }
 
-        // Using Supabase relation query: '*, iot_devices(name, drains(name))'
-        supabase
-            .from('alerts')
-            .select(`
-        *,
-        iot_devices ( name, drains ( name ) )
-      `)
-            .order('is_resolved', { ascending: true }) // Unresolved first
-            .order('created_at', { ascending: false }) // Newest first
-            .then(({ data, error: sbError }) => {
-                if (cancelled) return
-                if (sbError) setError(sbError.message)
-                else setAlerts((data as unknown as Alert[]) ?? [])
-                setLoading(false)
-            })
+  deviceLatest.forEach((reading, deviceId) => {
+    const name = deviceLabel(deviceId)
 
-        return () => { cancelled = true }
-    }, [tick])
-
-    const resolveAlert = async (id: string) => {
-        const { error } = await supabase
-            .from('alerts')
-            .update({ is_resolved: true })
-            .eq('id', id)
-
-        if (error) {
-            alert(`Failed to resolve: ${error.message}`)
-        } else {
-            setTick(t => t + 1) // Refetch the list to update UI
-        }
+    if (reading.water_level_pct >= ALERT_THRESHOLD_WATER_LEVEL) {
+      alerts.push({
+        id:         `${reading.id}-water`,
+        device_id:  deviceId,
+        reading_id: reading.id,
+        alert_type: 'HIGH_WATER_LEVEL',
+        message:    `Water level at ${reading.water_level_pct.toFixed(0)}% — above threshold of ${ALERT_THRESHOLD_WATER_LEVEL}%`,
+        is_resolved: false,
+        created_at:  reading.recorded_at,
+        iot_devices: { name, drains: { name } },
+      })
     }
 
-    return { alerts, loading, error, resolveAlert }
+    if (reading.battery_level_pct != null && reading.battery_level_pct < ALERT_THRESHOLD_BATTERY) {
+      alerts.push({
+        id:         `${reading.id}-battery`,
+        device_id:  deviceId,
+        reading_id: reading.id,
+        alert_type: 'LOW_BATTERY',
+        message:    `Battery at ${reading.battery_level_pct}% — below threshold of ${ALERT_THRESHOLD_BATTERY}%`,
+        is_resolved: false,
+        created_at:  reading.recorded_at,
+        iot_devices: { name, drains: { name } },
+      })
+    }
+  })
+
+  // Most-recent first
+  return alerts.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+}
+
+export function useAlerts() {
+  const [allAlerts, setAllAlerts]   = useState<Alert[]>([])
+  const [resolved, setResolved]     = useState<Set<string>>(new Set())
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState<string | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    const dbRef = ref(db, '/sensor_logs')
+
+    const unsubscribe = onValue(
+      dbRef,
+      (snapshot) => {
+        try {
+          const raw = snapshot.val()
+          if (!raw) {
+            setAllAlerts([])
+            setLoading(false)
+            return
+          }
+
+          const readings: SensorReading[] = Object.entries(raw).map(([key, val]) =>
+            toSensorReading(key, val as any)
+          )
+
+          setAllAlerts(generateAlerts(readings))
+        } catch (e: any) {
+          setError(e.message)
+        } finally {
+          setLoading(false)
+        }
+      },
+      (err) => {
+        setError(err.message)
+        setLoading(false)
+      }
+    )
+
+    return () => off(dbRef, 'value', unsubscribe as any)
+  }, [])
+
+  // Mark an alert as resolved locally (Firebase has no alerts table to update)
+  const resolveAlert = useCallback((id: string) => {
+    setResolved(prev => new Set([...prev, id]))
+  }, [])
+
+  // Merge resolved state: unresolved first, resolved second
+  const alerts = allAlerts
+    .map(a => ({ ...a, is_resolved: resolved.has(a.id) }))
+    .sort((a, b) => {
+      if (a.is_resolved !== b.is_resolved) return a.is_resolved ? 1 : -1
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+
+  return { alerts, loading, error, resolveAlert }
 }
