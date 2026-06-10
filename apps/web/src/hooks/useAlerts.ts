@@ -21,41 +21,42 @@ import { ALERT_THRESHOLD_WATER_LEVEL, ALERT_THRESHOLD_BATTERY } from '@/config/c
 function generateAlerts(readings: SensorReading[]): Alert[] {
   const alerts: Alert[] = []
 
-  // Group by device, pick the most recent reading per device for status
+  // Group by sub_id (IoT device), pick the most recent reading per device
   const deviceLatest = new Map<string, SensorReading>()
   for (const r of readings) {
-    const existing = deviceLatest.get(r.device_id)
+    const existing = deviceLatest.get(r.sub_id)
     if (!existing || r.recorded_at > existing.recorded_at) {
-      deviceLatest.set(r.device_id, r)
+      deviceLatest.set(r.sub_id, r)
     }
   }
 
-  deviceLatest.forEach((reading, deviceId) => {
-    const name = deviceLabel(deviceId)
+  deviceLatest.forEach((reading, subId) => {
+    const drainName = deviceLabel(reading.device_id)
+    const deviceName = subId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
     if (reading.water_level_pct >= ALERT_THRESHOLD_WATER_LEVEL) {
       alerts.push({
         id:         `${reading.id}-water`,
-        device_id:  deviceId,
+        device_id:  reading.device_id, // Keep device_id so it links to the drain
         reading_id: reading.id,
         alert_type: 'HIGH_WATER_LEVEL',
         message:    `Water level at ${reading.water_level_pct.toFixed(0)}% — above threshold of ${ALERT_THRESHOLD_WATER_LEVEL}%`,
         is_resolved: false,
         created_at:  reading.recorded_at,
-        iot_devices: { name, drains: { name } },
+        iot_devices: { name: deviceName, drains: { name: drainName } },
       })
     }
 
     if (reading.battery_level_pct != null && reading.battery_level_pct < ALERT_THRESHOLD_BATTERY) {
       alerts.push({
         id:         `${reading.id}-battery`,
-        device_id:  deviceId,
+        device_id:  reading.device_id, // Keep device_id so it links to the drain
         reading_id: reading.id,
         alert_type: 'LOW_BATTERY',
         message:    `Battery at ${reading.battery_level_pct}% — below threshold of ${ALERT_THRESHOLD_BATTERY}%`,
         is_resolved: false,
         created_at:  reading.recorded_at,
-        iot_devices: { name, drains: { name } },
+        iot_devices: { name: deviceName, drains: { name: drainName } },
       })
     }
   })

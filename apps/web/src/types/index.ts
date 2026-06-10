@@ -18,12 +18,15 @@ export type DrainStatus = 'OPERATIONAL' | 'WARNING' | 'CRITICAL'
 /** A single raw record as stored in Firebase RTDB */
 export interface FirebaseReading {
   key:               string   // Firebase push-key (auto-id)
-  device_id:         string
+  device_id:         string   // Maps to Drain ID (e.g. "Smart_Drain_01")
+  sub_id?:           string   // Maps to IoT Device ID (e.g. "Device-01")
   water_level_pct:   number
   water_pressure_psi: number
   temperature_c:     number
   battery_level_pct: number
   timestamp:         number   // Unix milliseconds
+  latitude?:         number
+  longitude?:        number
 }
 
 /**
@@ -32,19 +35,22 @@ export interface FirebaseReading {
  */
 export interface SensorReading {
   id:                string    // Firebase push-key used as row id
-  device_id:         string
+  device_id:         string    // The drain ID
+  sub_id:            string    // The specific IoT device ID
   water_level_pct:   number
   water_pressure_psi: number | null
   temperature_c:     number | null
   battery_level_pct: number | null
   recorded_at:       string   // ISO string derived from timestamp
+  latitude:          number | null
+  longitude:         number | null
 }
 
 /** Derived from grouping readings by device_id */
 export interface IoTDevice {
-  id:        string   // same as device_id
-  drain_id:  string   // same as device_id (no separate drain concept in Firebase)
-  name:      string   // human-friendly label e.g. "Smart Drain 01"
+  id:        string   // Maps to sub_id
+  drain_id:  string   // Maps to device_id
+  name:      string   // human-friendly label
   latitude:  number
   longitude: number
   status:    DrainStatus

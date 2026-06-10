@@ -47,12 +47,13 @@ export function useHistoricalReadings(timeRange: TimeRange, deviceId: string | '
 
           let entries: HistoricalReading[] = Object.entries(raw).map(([key, val]) => {
             const base = toSensorReading(key, val as any)
-            const name = deviceLabel(base.device_id)
+            const drainName = deviceLabel(base.device_id)
+            const deviceName = base.sub_id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
             return {
               ...base,
               iot_devices: {
-                name,
-                drains: { name },
+                name: deviceName,
+                drains: { name: drainName },
               },
             }
           })

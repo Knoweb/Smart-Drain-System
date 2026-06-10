@@ -32,16 +32,18 @@ export function deviceLabel(deviceId: string): string {
     ?? deviceId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-/** Convert a raw Firebase entry into a normalised SensorReading */
 export function toSensorReading(key: string, raw: Omit<FirebaseReading, 'key'>): SensorReading {
   return {
     id:                key,
     device_id:         raw.device_id ?? 'unknown',
+    sub_id:            raw.sub_id ?? 'unknown_device',
     water_level_pct:   raw.water_level_pct   ?? 0,
     water_pressure_psi: raw.water_pressure_psi != null ? raw.water_pressure_psi : null,
     temperature_c:     raw.temperature_c     != null ? raw.temperature_c     : null,
     battery_level_pct: raw.battery_level_pct != null ? raw.battery_level_pct : null,
     recorded_at:       new Date(raw.timestamp ?? Date.now()).toISOString(),
+    latitude:          raw.latitude != null ? raw.latitude : null,
+    longitude:         raw.longitude != null ? raw.longitude : null,
   }
 }
 
@@ -58,7 +60,7 @@ export function deriveStatus(waterLevel: number, battery: number | null): DrainS
  * Each unique device_id becomes one Drain with one IoTDevice.
  */
 export function buildDrains(readings: SensorReading[]): Drain[] {
-  // Group readings by device_id
+  // Group readings by device_id (drain)
   const deviceMap = new Map<string, SensorReading[]>()
   for (const r of readings) {
     const arr = deviceMap.get(r.device_id) ?? []
@@ -68,35 +70,53 @@ export function buildDrains(readings: SensorReading[]): Drain[] {
 
   const drains: Drain[] = []
 
-  deviceMap.forEach((deviceReadings, deviceId) => {
-    // Use the most-recent reading for status calculation
-    const latest = deviceReadings.reduce(
+  deviceMap.forEach((drainReadings, deviceId) => {
+    // Group this drain's readings by sub_id (IoT device)
+    const subDeviceMap = new Map<string, SensorReading[]>()
+    for (const r of drainReadings) {
+      const arr = subDeviceMap.get(r.sub_id) ?? []
+      arr.push(r)
+      subDeviceMap.set(r.sub_id, arr)
+    }
+
+    const iotDevices: IoTDevice[] = []
+    
+    // For the overall drain status, we'll use the absolute latest reading across all its sub-devices
+    const latestDrainReading = drainReadings.reduce(
       (best, r) => new Date(r.recorded_at) > new Date(best.recorded_at) ? r : best
     )
 
-    const meta   = DEVICE_META[deviceId]
-    const status = deriveStatus(latest.water_level_pct, latest.battery_level_pct)
-    const name   = deviceLabel(deviceId)
+    subDeviceMap.forEach((deviceReadings, subId) => {
+      const latestDeviceReading = deviceReadings.reduce(
+        (best, r) => new Date(r.recorded_at) > new Date(best.recorded_at) ? r : best
+      )
 
-    const device: IoTDevice = {
-      id:        deviceId,
-      drain_id:  deviceId,
-      name,
-      latitude:  meta?.lat ?? 6.9271,
-      longitude: meta?.lng ?? 79.8612,
-      status,
-      created_at: latest.recorded_at,
-    }
+      const status = deriveStatus(latestDeviceReading.water_level_pct, latestDeviceReading.battery_level_pct)
+      
+      iotDevices.push({
+        id:        subId,
+        drain_id:  deviceId,
+        name:      subId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        latitude:  latestDeviceReading.latitude ?? DEVICE_META[deviceId]?.lat ?? 6.9271,
+        longitude: latestDeviceReading.longitude ?? DEVICE_META[deviceId]?.lng ?? 79.8612,
+        status,
+        created_at: latestDeviceReading.recorded_at,
+      })
+    })
+
+    const meta   = DEVICE_META[deviceId]
+    const status = deriveStatus(latestDrainReading.water_level_pct, latestDrainReading.battery_level_pct)
+    const name   = deviceLabel(deviceId)
 
     drains.push({
       id:                deviceId,
       name,
-      latitude:          meta?.lat ?? 6.9271,
-      longitude:         meta?.lng ?? 79.8612,
+      latitude:          latestDrainReading.latitude ?? meta?.lat ?? 6.9271,
+      longitude:         latestDrainReading.longitude ?? meta?.lng ?? 79.8612,
       baseline_depth_cm: null,
       status,
-      created_at:        latest.recorded_at,
-      iot_devices:       [device],
+      created_at:        latestDrainReading.recorded_at,
+      iot_devices:       iotDevices.sort((a, b) => a.name.localeCompare(b.name)),
     })
   })
 
