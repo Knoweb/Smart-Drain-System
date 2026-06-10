@@ -23,14 +23,15 @@ export default function LoginPage() {
   const [loading, setLoading]                       = useState(false);
   const [error, setError]                           = useState<string | null>(null);
   const [successMsg, setSuccessMsg]                 = useState<string | null>(null);
+  const [isRegistering, setIsRegistering]           = useState(false);
 
   const navigate  = useNavigate();
   const { user }  = useAuth();
 
-  // Redirect to dashboard if already logged in
+  // Redirect to dashboard if already logged in (but not during registration flow)
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user && !isRegistering) navigate('/', { replace: true });
+  }, [user, navigate, isRegistering]);
 
   // ── Login / Sign-up ──────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,10 +50,12 @@ export default function LoginPage() {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
+        setIsRegistering(true);
         const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
         if (username) {
           await updateProfile(newUser, { displayName: username });
         }
+        await auth.signOut(); // Firebase auto-logs in on register; log them out immediately
         setSuccessMsg('Registration successful! You may now sign in.');
         setIsLogin(true);
       }
@@ -72,6 +75,7 @@ export default function LoginPage() {
       }
     } finally {
       setLoading(false);
+      setIsRegistering(false);
     }
   };
 
