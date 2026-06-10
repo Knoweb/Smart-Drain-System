@@ -14,12 +14,12 @@ import { db } from '@/lib/firebase'
 import { toSensorReading } from '@/lib/firebaseData'
 import type { SensorReading } from '@/types'
 
-export function useDeviceReadings(deviceId: string | null, limit = 20) {
+export function useDeviceReadings(subId: string | null, limit = 20) {
   const [readings, setReadings] = useState<SensorReading[]>([])
   const [loading, setLoading]   = useState(false)
 
   useEffect(() => {
-    if (!deviceId) {
+    if (!subId) {
       setReadings([])
       return
     }
@@ -41,7 +41,7 @@ export function useDeviceReadings(deviceId: string | null, limit = 20) {
 
           const entries: SensorReading[] = Object.entries(raw)
             .map(([key, val]) => toSensorReading(key, val as any))
-            .filter(r => r.device_id === deviceId)
+            .filter(r => r.sub_id === subId)
             // Sort newest first, then take the `limit` most recent
             .sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())
             .slice(0, limit)
@@ -61,7 +61,7 @@ export function useDeviceReadings(deviceId: string | null, limit = 20) {
     )
 
     return () => off(dbRef, 'value', unsubscribe as any)
-  }, [deviceId, limit])
+  }, [subId, limit])
 
   return { readings, loading }
 }

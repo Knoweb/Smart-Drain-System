@@ -19,24 +19,24 @@ interface UseLatestReadingResult {
   error: string | null
 }
 
-export function useLatestReading(deviceId: string | null): UseLatestReadingResult {
+export function useLatestReading(subId: string | null): UseLatestReadingResult {
   const [reading, setReading] = useState<SensorReading | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
   useEffect(() => {
-    if (!deviceId) {
+    if (!subId) {
       setReading(null)
       return
     }
 
     setLoading(true)
 
-    // Query: filter by device_id, order by timestamp, take last 1
+    // Query: filter by sub_id, order by timestamp, take last 1
     const dbRef = query(
       ref(db, '/sensor_logs'),
-      orderByChild('device_id'),
-      equalTo(deviceId),
+      orderByChild('sub_id'),
+      equalTo(subId),
     )
 
     const unsubscribe = onValue(
@@ -73,7 +73,7 @@ export function useLatestReading(deviceId: string | null): UseLatestReadingResul
     )
 
     return () => off(dbRef, 'value', unsubscribe as any)
-  }, [deviceId])
+  }, [subId])
 
   return { reading, loading, error }
 }
