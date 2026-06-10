@@ -77,10 +77,14 @@ function CustomTooltip({ active, payload, label }: {
     payload?: Array<{ name: string; value: number; color: string }>
 }) {
     if (!active || !payload?.length) return null
+
+    // Deduplicate payload entries (ComposedChart passes one for Area and one for Line)
+    const uniquePayload = Array.from(new Map(payload.map(p => [p.name, p])).values())
+
     return (
         <div className={styles.tooltip}>
             <p className={styles.tooltipTime}>{label}</p>
-            {payload.map(p => (
+            {uniquePayload.map(p => (
                 <div key={p.name} className={styles.tooltipRow}>
                     <span className={styles.tooltipDot} style={{ background: p.color }} />
                     <span className={styles.tooltipName}>{p.name}</span>
@@ -184,6 +188,7 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
                             fill={`url(#gradient-${i})`}
                             stroke="none"
                             isAnimationActive={false}
+                            legendType="none"
                         />
                     ))}
 
