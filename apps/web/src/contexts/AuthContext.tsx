@@ -1,59 +1,53 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+/**
+ * AuthContext — src/contexts/AuthContext.tsx
+ * ---------------------------------------------------------------------------
+ * Provides Firebase Authentication state to the entire React tree.
+ * Replaces the previous Supabase auth context.
+ */
+
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import {
+  User,
+  onAuthStateChanged,
+} from 'firebase/auth'
+import { auth } from '../lib/firebase'
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
-  isLoading: boolean;
+  user: User | null
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
   user: null,
   isLoading: true,
-});
+})
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser]         = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    // Firebase listener fires immediately with the current auth state,
+    // then again on every login / logout / token-refresh event.
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser)
+      setIsLoading(false)
+    })
 
-    // Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    return () => unsubscribe()
+  }, [])
 
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  return (
+    <AuthContext.Provider value={{ user, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
 
-  const value = {
-    session,
-    user,
-    isLoading,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Custom hook to use the auth context
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
-};
+  return context
+}

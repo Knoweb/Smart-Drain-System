@@ -16,7 +16,8 @@
 
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { signOut } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './DashboardLayout.module.css'
 import logoImg from '../../assets/12.jpeg'
@@ -47,25 +48,20 @@ export default function DashboardLayout() {
     const headerInfo = PAGE_HEADERS[location.pathname] || { title: 'Smart Drain System', subtitle: '' }
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut()
+        await signOut(auth)
         navigate('/login')
     }
 
-    // Get user initials for the avatar (from username or email)
+    // Get user initials for the avatar (from displayName or email)
     const getInitials = () => {
         if (!user) return '??'
-        
-        // Check for custom username first
-        const username = user.user_metadata?.username
-        if (username && typeof username === 'string') {
-            return username.substring(0, 2).toUpperCase()
+        // Firebase User has displayName set via updateProfile()
+        if (user.displayName) {
+            return user.displayName.substring(0, 2).toUpperCase()
         }
-        
-        // Fallback to email
         if (user.email) {
             return user.email.substring(0, 2).toUpperCase()
         }
-        
         return 'US'
     }
 
@@ -124,9 +120,9 @@ export default function DashboardLayout() {
                     </div>
                     <div className={styles.topbarRight}>
                         <span className={styles.liveBadge}>● LIVE</span>
-                        <div 
-                            className={styles.avatar} 
-                            title={user?.user_metadata?.username || user?.email || 'User Profile'}
+                        <div
+                            className={styles.avatar}
+                            title={user?.displayName || user?.email || 'User Profile'}
                         >
                             {getInitials()}
                         </div>
