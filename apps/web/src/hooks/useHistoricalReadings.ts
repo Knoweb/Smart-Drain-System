@@ -94,3 +94,4 @@ export function useHistoricalReadings(timeRange: TimeRange, deviceId: string | '
 
   return { readings, loading, error }
 }
+

@@ -77,3 +77,4 @@ export function useLatestReading(deviceId: string | null): UseLatestReadingResul
 
   return { reading, loading, error }
 }
+
