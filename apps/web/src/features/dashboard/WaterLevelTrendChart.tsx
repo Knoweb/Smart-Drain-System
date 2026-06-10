@@ -13,7 +13,7 @@
  */
 
 import {
-    ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid,
+    AreaChart, Area, XAxis, YAxis, CartesianGrid,
     Tooltip, Legend, ReferenceLine, ResponsiveContainer,
 } from 'recharts'
 import { useMemo } from 'react'
@@ -132,7 +132,7 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
             </div>
 
             <ResponsiveContainer width="100%" height={280}>
-                <ComposedChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
                     {/* SVG gradient definitions — forwarded by Recharts to the underlying SVG */}
                     <defs>
                         {deviceNames.map((name, i) => {
@@ -179,30 +179,17 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
                         strokeWidth={1.5}
                     />
 
-                    {/* Soft gradient fill areas underneath lines */}
-                    {deviceNames.map((name, i) => (
-                        <Area
-                            key={`area-${name}`}
-                            type="monotone"
-                            dataKey={name}
-                            fill={`url(#gradient-${i})`}
-                            stroke="none"
-                            isAnimationActive={false}
-                            legendType="none"
-                        />
-                    ))}
-
-                    {/* Actual coloured lines per device */}
+                    {/* Coloured areas (line + gradient) per device */}
                     {deviceNames.map((name, i) => {
                         const color = LINE_PALETTE[i % LINE_PALETTE.length]
                         return (
-                            <Line
+                            <Area
                                 key={name}
                                 type="monotone"
                                 dataKey={name}
                                 stroke={color}
                                 strokeWidth={2}
-                                dot={false}
+                                fill={`url(#gradient-${i})`}
                                 activeDot={{ r: 4, strokeWidth: 0 }}
                                 animationDuration={600}
                                 connectNulls
@@ -217,7 +204,7 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
                             <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{value}</span>
                         )}
                     />
-                </ComposedChart>
+                </AreaChart>
             </ResponsiveContainer>
         </div>
     )
