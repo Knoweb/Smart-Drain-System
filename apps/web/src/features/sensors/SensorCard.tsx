@@ -1,14 +1,9 @@
 /**
  * SensorCard — src/features/sensors/SensorCard.tsx
  * ---------------------------------------------------------------------------
- * This component displays the live telemetry for a single drain.
- * It uses Recharts to render circular gauges for Water Level and Battery.
- *
- * HOW IT WORKS:
- * Parant (<SensorsPage>) gives it a `drain.id`.
- * This component calls `useLatestReading(drain.id)`.
- * When Supabase Realtime pushes a new reading, only THIS card re-renders,
- * without affecting the rest of the page.
+ * Displays live telemetry for a single drain device.
+ * Calls useLatestReading(device.id) which subscribes to Firebase RTDB.
+ * When Firebase pushes a new reading, only THIS card re-renders.
  */
 
 import { useLatestReading } from '@/hooks/useLatestReading'

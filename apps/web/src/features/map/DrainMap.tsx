@@ -54,7 +54,7 @@ export function DrainMap() {
                 <span style={{ fontSize: '2rem' }}>⚠️</span>
                 <p>Failed to load drains: {error}</p>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Check your Supabase credentials and RLS policies.
+                    Check your Firebase configuration and database rules.
                 </p>
             </div>
         )

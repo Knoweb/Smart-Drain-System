@@ -131,7 +131,7 @@ export default function DashboardPage() {
             {!drainsLoading && drains.length === 0 && !drainsError && (
                 <div className={styles.placeholder}>
                     <span className={styles.placeholderIcon}>💧</span>
-                    <p>No drains found. Insert rows into the <code>drains</code> table in Supabase.</p>
+                    <p>No sensor readings found. Make sure your hardware is sending data to Firebase Realtime Database.</p>
                 </div>
             )}
         </div>
