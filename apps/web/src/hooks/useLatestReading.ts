@@ -32,12 +32,9 @@ export function useLatestReading(subId: string | null): UseLatestReadingResult {
 
     setLoading(true)
 
-    // Query: filter by sub_id, order by timestamp, take last 1
-    const dbRef = query(
-      ref(db, '/sensor_logs'),
-      orderByChild('sub_id'),
-      equalTo(subId),
-    )
+    // To support hardware that lacks a sub_id field in Firebase,
+    // we fetch and filter client-side using toSensorReading's fallback values.
+    const dbRef = ref(db, '/sensor_logs')
 
     const unsubscribe = onValue(
       dbRef,
@@ -50,14 +47,16 @@ export function useLatestReading(subId: string | null): UseLatestReadingResult {
             return
           }
 
-          // Convert to array and find the one with the highest timestamp
-          const entries = Object.entries(raw).map(([key, val]) =>
-            toSensorReading(key, val as any)
-          )
+          let latest: SensorReading | null = null
 
-          const latest = entries.reduce(
-            (best, r) => r.recorded_at > best.recorded_at ? r : best
-          )
+          for (const key in raw) {
+            const r = toSensorReading(key, raw[key] as any)
+            if (r.sub_id === subId) {
+              if (!latest || r.recorded_at > latest.recorded_at) {
+                latest = r
+              }
+            }
+          }
 
           setReading(latest)
         } catch (e: any) {
