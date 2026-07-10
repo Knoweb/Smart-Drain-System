@@ -32,10 +32,10 @@ export function AlertList() {
     if (alerts.length === 0) {
         return (
             <div className={styles.emptyState}>
-                <span className={styles.emptyIcon}>🎉</span>
-                <p>No alerts in the system. Everything is running smoothly.</p>
+                <span className={styles.emptyIcon}>✅</span>
+                <p>No active alerts in the system. Everything is running smoothly.</p>
                 <p className={styles.mutedText}>
-                    When sensors report low battery or water levels &gt; 80%, alerts will appear here.
+                    When sensors report water or garbage levels exceeding their thresholds, alerts will appear here.
                 </p>
             </div>
         )
@@ -51,21 +51,21 @@ export function AlertList() {
 }
 
 function AlertCard({ alert, onResolve }: { alert: Alert; onResolve: () => void }) {
-    // Determine colors based on alert type
     const isResolved = alert.is_resolved
     const isHighWater = alert.alert_type === 'HIGH_WATER_LEVEL'
+    const isHighMesh = alert.alert_type === 'HIGH_MESH_LEVEL'
     const isLowBattery = alert.alert_type === 'LOW_BATTERY'
 
-    // If resolved, it's grayed out. Otherwise, Red for water, Amber for battery.
+    // If resolved, it's grayed out. Otherwise, Red for water/mesh, Amber for battery.
     const themeClass = isResolved
         ? styles.resolved
-        : isHighWater
+        : (isHighWater || isHighMesh)
             ? styles.critical
             : isLowBattery
                 ? styles.warning
                 : styles.default
 
-    const icon = isHighWater ? '🌊' : isLowBattery ? '🔋' : '⚠️'
+    const icon = isHighWater ? '🌊' : isHighMesh ? '🗑️' : isLowBattery ? '🔋' : '⚠️'
     // Extract linked device and drain details
     const deviceName = alert.iot_devices?.name ?? 'Unknown Device'
     const drainName = alert.iot_devices?.drains?.name ?? 'Unknown Drain Location'

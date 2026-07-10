@@ -6,8 +6,9 @@
  * raw readings, so we scan them and generate alerts client-side.
  *
  * Alert rules:
- *   HIGH_WATER_LEVEL  → water_level_pct >= 80
- *   LOW_BATTERY       → battery_level_pct < 20 (and not null)
+ *   HIGH_WATER_LEVEL  → water_level_pct >= 70 (drain sensors)
+ *   HIGH_MESH_LEVEL   → mesh_level_pct  >= 70 (mesh bucket sensors)
+ *   LOW_BATTERY       → battery_level_pct < 20 (any device)
  */
 
 import { useState, useEffect, useCallback } from 'react'
@@ -15,10 +16,10 @@ import { ref, onValue, off } from 'firebase/database'
 import { db } from '@/lib/firebase'
 import { toSensorReading, deviceLabel } from '@/lib/firebaseData'
 import type { Alert, SensorReading } from '@/types'
-import { ALERT_THRESHOLD_WATER_LEVEL, ALERT_THRESHOLD_BATTERY } from '@/config/constants'
+import { useSettings, AppSettings } from '@/hooks/useSettings'
 
-/** Build alert objects from a reading that exceeds a threshold */
-function generateAlerts(readings: SensorReading[]): Alert[] {
+/** Build alert objects from readings that exceed a threshold */
+function generateAlerts(readings: SensorReading[], thresholds: AppSettings['thresholds']): Alert[] {
   const alerts: Alert[] = []
 
   // Group by sub_id (IoT device), pick the most recent reading per device
@@ -31,32 +32,64 @@ function generateAlerts(readings: SensorReading[]): Alert[] {
   }
 
   deviceLatest.forEach((reading, subId) => {
-    const drainName = deviceLabel(reading.device_id)
+    const drainName  = deviceLabel(reading.device_id)
     const deviceName = subId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
-    if (reading.water_level_pct >= ALERT_THRESHOLD_WATER_LEVEL) {
-      alerts.push({
-        id:         `${reading.id}-water`,
-        device_id:  reading.device_id, // Keep device_id so it links to the drain
-        reading_id: reading.id,
-        alert_type: 'HIGH_WATER_LEVEL',
-        message:    `Water level at ${reading.water_level_pct.toFixed(0)}% — above threshold of ${ALERT_THRESHOLD_WATER_LEVEL}%`,
-        is_resolved: false,
-        created_at:  reading.recorded_at,
-        iot_devices: { name: deviceName, drains: { name: drainName } },
-      })
+    // ── Drain Sensor Alerts ──────────────────────────────────────────────
+    if (reading.device_type === 'drain_sensor') {
+      if (reading.water_level_pct >= thresholds.water_critical) {
+        alerts.push({
+          id: `${reading.id}-water-crit`,
+          device_id: reading.device_id,
+          reading_id: reading.id,
+          alert_type: 'HIGH_WATER_LEVEL',
+          message: `CRITICAL: Water level at ${reading.water_level_pct.toFixed(0)}% — above ${thresholds.water_critical}% critical threshold`,
+          is_resolved: false,
+          created_at: reading.recorded_at,
+          iot_devices: { name: deviceName, drains: { name: drainName }, device_type: 'drain_sensor' },
+        })
+      } else if (reading.water_level_pct >= thresholds.water_warning) {
+        alerts.push({
+          id: `${reading.id}-water-warn`,
+          device_id: reading.device_id,
+          reading_id: reading.id,
+          alert_type: 'HIGH_WATER_LEVEL',
+          message: `WARNING: Water level at ${reading.water_level_pct.toFixed(0)}% — above ${thresholds.water_warning}% warning threshold`,
+          is_resolved: false,
+          created_at: reading.recorded_at,
+          iot_devices: { name: deviceName, drains: { name: drainName }, device_type: 'drain_sensor' },
+        })
+      }
     }
 
-    if (reading.battery_level_pct != null && reading.battery_level_pct < ALERT_THRESHOLD_BATTERY) {
+    // ── Mesh Bucket Alerts ───────────────────────────────────────────────
+    if (reading.device_type === 'mesh_bucket') {
+      const meshLevel = reading.mesh_level_pct ?? 0
+      if (meshLevel >= thresholds.mesh_warning) {
+        alerts.push({
+          id: `${reading.id}-mesh`,
+          device_id: reading.device_id,
+          reading_id: reading.id,
+          alert_type: 'HIGH_MESH_LEVEL',
+          message: `Garbage level at ${meshLevel.toFixed(0)}% — mesh bucket needs cleaning (threshold: ${thresholds.mesh_warning}%)`,
+          is_resolved: false,
+          created_at: reading.recorded_at,
+          iot_devices: { name: deviceName, drains: { name: drainName }, device_type: 'mesh_bucket' },
+        })
+      }
+    }
+
+    // ── Battery Alert (any device type) ─────────────────────────────────
+    if (reading.battery_level_pct != null && reading.battery_level_pct < thresholds.battery_low) {
       alerts.push({
-        id:         `${reading.id}-battery`,
-        device_id:  reading.device_id, // Keep device_id so it links to the drain
+        id: `${reading.id}-battery`,
+        device_id: reading.device_id,
         reading_id: reading.id,
         alert_type: 'LOW_BATTERY',
-        message:    `Battery at ${reading.battery_level_pct}% — below threshold of ${ALERT_THRESHOLD_BATTERY}%`,
+        message: `Battery at ${reading.battery_level_pct}% — below ${thresholds.battery_low}% threshold`,
         is_resolved: false,
-        created_at:  reading.recorded_at,
-        iot_devices: { name: deviceName, drains: { name: drainName } },
+        created_at: reading.recorded_at,
+        iot_devices: { name: deviceName, drains: { name: drainName }, device_type: reading.device_type },
       })
     }
   })
@@ -68,10 +101,11 @@ function generateAlerts(readings: SensorReading[]): Alert[] {
 }
 
 export function useAlerts() {
-  const [allAlerts, setAllAlerts]   = useState<Alert[]>([])
-  const [resolved, setResolved]     = useState<Set<string>>(new Set())
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState<string | null>(null)
+  const settings = useSettings()
+  const [allAlerts, setAllAlerts] = useState<Alert[]>([])
+  const [resolved, setResolved]   = useState<Set<string>>(new Set())
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -92,7 +126,7 @@ export function useAlerts() {
             toSensorReading(key, val as any)
           )
 
-          setAllAlerts(generateAlerts(readings))
+          setAllAlerts(generateAlerts(readings, settings.thresholds))
         } catch (e: any) {
           setError(e.message)
         } finally {
@@ -106,9 +140,9 @@ export function useAlerts() {
     )
 
     return () => off(dbRef, 'value', unsubscribe as any)
-  }, [])
+  }, [settings.thresholds])
 
-  // Mark an alert as resolved locally (Firebase has no alerts table to update)
+  // Mark an alert as resolved locally
   const resolveAlert = useCallback((id: string) => {
     setResolved(prev => new Set([...prev, id]))
   }, [])
@@ -123,4 +157,3 @@ export function useAlerts() {
 
   return { alerts, loading, error, resolveAlert }
 }
-

@@ -2,15 +2,21 @@
 
 .container {
     background: var(--surface-card);
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-lg);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-xl);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: 300px;
     gap: var(--space-4);
-    padding: var(--space-6);
+    padding: var(--space-8);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.container:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
 }
 
 .emptyState {
@@ -47,19 +53,26 @@
 /* ── Alert Card ── */
 .card {
     background: var(--surface-card);
-    border: 1px solid var(--surface-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-4) var(--space-5);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5) var(--space-6);
     display: flex;
     align-items: flex-start;
-    gap: var(--space-4);
+    gap: var(--space-5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
 }
 
 .cardIcon {
-    font-size: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    width: 44px;
-    height: 44px;
+    font-size: 1.8rem;
+    background: rgba(0, 0, 0, 0.03);
+    width: 52px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -169,4 +182,16 @@
 .resolved .cardIcon {
     filter: grayscale(1);
     opacity: 0.5;
+}
+
+@media (max-width: 600px) {
+    .card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .cardActions {
+        width: 100%;
+        margin-top: var(--space-2);
+        justify-content: flex-start;
+    }
 }
