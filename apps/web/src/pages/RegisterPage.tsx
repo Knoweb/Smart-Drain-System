@@ -293,9 +293,37 @@ export default function RegisterPage() {
 
     useEffect(() => {
         const unsub = onValue(ref(db, 'registered_devices'), snap => {
-            if (!snap.exists()) { setRegisteredList([]); return }
-            const items: RegisteredDevice[] = []
-            snap.forEach(c => items.push({ id: c.key!, ...c.val() }))
+            const items: RegisteredDevice[] = [
+                {
+                    id: 'default_drain_01',
+                    parent_id: 'Smart Drain 01',
+                    parent_name: 'Smart Drain 01',
+                    device_id: 'Device-01',
+                    device_name: 'Main Drain Sensor',
+                    device_type: 'drain_sensor',
+                    location: 'Kelaniya Main Canal',
+                    latitude: 6.9533,
+                    longitude: 79.9140,
+                    registered_at: '2024-01-01T00:00:00.000Z'
+                },
+                {
+                    id: 'default_mesh_01',
+                    parent_id: 'Mesh Bucket 01',
+                    parent_name: 'Mesh Bucket 01',
+                    device_id: 'Device-02',
+                    device_name: 'Main Mesh Bucket',
+                    device_type: 'mesh_bucket',
+                    location: 'Kelaniya Main Canal',
+                    latitude: 6.9533,
+                    longitude: 79.9140,
+                    registered_at: '2024-01-01T00:00:00.000Z'
+                }
+            ]
+            
+            if (snap.exists()) {
+                snap.forEach(c => items.push({ id: c.key!, ...c.val() }))
+            }
+            
             items.sort((a, b) =>
                 new Date(b.registered_at).getTime() - new Date(a.registered_at).getTime()
             )
