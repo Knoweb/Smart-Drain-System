@@ -107,11 +107,7 @@ export default function LoginPage() {
 
       {/* Authentication Form Section */}
       <div className={styles.formSection}>
-        {/* Mobile Brand Name */}
-        <div className={styles.brandMobile}>
-          <span>💧</span>
-          <span>SmartDrain</span>
-        </div>
+
 
         {/* Logo Image */}
         <div className={styles.logoContainer}>
