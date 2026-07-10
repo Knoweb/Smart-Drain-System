@@ -1,6 +1,7 @@
 package com.smartdrain.alert.service;
 
 import com.smartdrain.alert.model.TelemetryPayload;
+import com.smartdrain.alert.model.Settings;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -15,14 +16,15 @@ public class EmailNotificationService implements NotificationService {
     }
 
     @Override
-    public void sendHighWaterLevelAlert(TelemetryPayload payload) {
+    public void sendHighWaterLevelAlert(TelemetryPayload payload, Settings settings, boolean isCritical) {
         if (payload.getUserEmail() == null || payload.getUserEmail().isEmpty()) return;
         
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(payload.getUserEmail());
-        message.setSubject("CRITICAL: High Water Level at " + payload.getDrainName());
-        message.setText("URGENT: The water level at " + payload.getDrainName() + 
-            " has reached " + payload.getWaterLevelPct() + "%. Please deploy maintenance staff immediately.");
+        String levelPrefix = isCritical ? "CRITICAL" : "WARNING";
+        message.setSubject(levelPrefix + ": High Water Level at " + payload.getDrainName());
+        message.setText("The water level at " + payload.getDrainName() + 
+            " has reached " + payload.getWaterLevelPct() + "%. Please check the dashboard.");
             
         try {
             mailSender.send(message);
@@ -33,7 +35,7 @@ public class EmailNotificationService implements NotificationService {
     }
 
     @Override
-    public void sendLowBatteryAlert(TelemetryPayload payload) {
+    public void sendLowBatteryAlert(TelemetryPayload payload, Settings settings) {
         if (payload.getUserEmail() == null || payload.getUserEmail().isEmpty()) return;
         
         SimpleMailMessage message = new SimpleMailMessage();

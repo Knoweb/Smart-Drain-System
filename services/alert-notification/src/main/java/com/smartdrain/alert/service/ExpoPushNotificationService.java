@@ -1,6 +1,7 @@
 package com.smartdrain.alert.service;
 
 import com.smartdrain.alert.model.TelemetryPayload;
+import com.smartdrain.alert.model.Settings;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -19,16 +20,17 @@ public class ExpoPushNotificationService implements NotificationService {
     }
 
     @Override
-    public void sendHighWaterLevelAlert(TelemetryPayload payload) {
+    public void sendHighWaterLevelAlert(TelemetryPayload payload, Settings settings, boolean isCritical) {
         if (payload.getPushToken() == null || payload.getPushToken().isEmpty()) return;
         
+        String levelPrefix = isCritical ? "CRITICAL" : "WARNING";
         sendPushNotification(payload.getPushToken(), 
-            "High Water Level Alert", 
-            "⚠️ Water level at " + payload.getDrainName() + " is critical: " + payload.getWaterLevelPct() + "%");
+            levelPrefix + " Water Level Alert", 
+            "⚠️ Water level at " + payload.getDrainName() + " is " + levelPrefix.toLowerCase() + ": " + payload.getWaterLevelPct() + "%");
     }
 
     @Override
-    public void sendLowBatteryAlert(TelemetryPayload payload) {
+    public void sendLowBatteryAlert(TelemetryPayload payload, Settings settings) {
         if (payload.getPushToken() == null || payload.getPushToken().isEmpty()) return;
         
         sendPushNotification(payload.getPushToken(), 
