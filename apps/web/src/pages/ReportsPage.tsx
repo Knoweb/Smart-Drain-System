@@ -103,20 +103,21 @@ export default function ReportsPage() {
                 ) : readings.length === 0 ? (
                     <div className={styles.empty}>No readings found for the selected filters.</div>
                 ) : (
-                    <table className={pageStyles.table}>
-                        <thead>
-                            <tr>
-                                <th>Date / Time</th>
-                                <th>Location</th>
-                                <th>Sensor Name</th>
-                                <th>Water Level</th>
-                                <th>Garbage Level</th>
-                                <th>Pressure</th>
-                                <th>Temp</th>
-                                <th>Battery</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <div style={{ overflowX: 'auto', width: '100%' }}>
+                        <table className={pageStyles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Date / Time</th>
+                                    <th>Location</th>
+                                    <th>Sensor Name</th>
+                                    <th>Water Level</th>
+                                    <th>Garbage Level</th>
+                                    <th>Pressure</th>
+                                    <th>Temp</th>
+                                    <th>Battery</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             {readings.map(r => (
                                 <tr key={r.id}>
                                     <td>{new Date(r.recorded_at).toLocaleString()}</td>
@@ -159,6 +160,7 @@ export default function ReportsPage() {
                             ))}
                         </tbody>
                     </table>
+                    </div>
                 )}
             </div>
 

@@ -240,20 +240,20 @@ export default function SettingsPage() {
                 {/* Specific Device Configurations */}
                 <div className={styles.settingCard} style={{ gridColumn: '1 / -1', display: 'block' }}>
                     <div className={styles.settingInfo} style={{ borderBottom: '1px solid var(--surface-border)', paddingBottom: '16px', marginBottom: '24px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
                                 <h3 className={styles.settingTitle}>Device-Specific Configurations</h3>
                                 <p className={styles.settingDesc}>
                                     Assign specific alert numbers and thresholds per hardware device (Mesh Bucket / Smart Drain).
                                 </p>
                             </div>
-                            <button onClick={addDeviceConfig} style={{ padding: '6px 14px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                            <button onClick={addDeviceConfig} style={{ padding: '6px 14px', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
                                 + Add Device Config
                             </button>
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px' }}>
                         {deviceConfigs.length === 0 && (
                             <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem', fontStyle: 'italic', gridColumn: '1 / -1' }}>
                                 No device-specific configurations set.
@@ -280,7 +280,7 @@ export default function SettingsPage() {
                                             <input
                                                 type="text"
                                                 className={styles.input}
-                                                style={{ fontSize: '1.2rem', fontWeight: 700, padding: '4px 0', border: 'none', background: 'transparent', borderBottom: '1px dashed var(--text-secondary)', borderRadius: 0, marginTop: '4px', width: '250px', color: 'var(--text-primary)' }}
+                                                style={{ fontSize: '1.2rem', fontWeight: 700, padding: '4px 0', border: 'none', background: 'transparent', borderBottom: '1px dashed var(--text-secondary)', borderRadius: 0, marginTop: '4px', width: '100%', maxWidth: '250px', color: 'var(--text-primary)' }}
                                                 value={cfg.deviceId}
                                                 onChange={e => updateDeviceConfig(index, 'deviceId', e.target.value)}
                                                 placeholder="e.g. Mesh Bucket 02"
