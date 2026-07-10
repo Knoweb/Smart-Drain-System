@@ -18,7 +18,6 @@ import {
 } from 'recharts'
 import { useMemo } from 'react'
 import type { HistoricalReading } from '@/hooks/useHistoricalReadings'
-import { ALERT_THRESHOLD_WATER_LEVEL } from '@/config/constants'
 import styles from './WaterLevelTrendChart.module.css'
 
 // Palette for multi-device lines — rich, accessible colours
@@ -36,6 +35,9 @@ const LINE_PALETTE = [
 interface Props {
     readings: HistoricalReading[]
     loading: boolean
+    alertThreshold: number
+    metricKey?: 'water_level_pct' | 'mesh_level_pct'
+    title?: string
 }
 
 // Format a UTC timestamp to local "HH:MM" for X-axis ticks
@@ -43,8 +45,8 @@ function fmtTime(iso: string) {
     return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-// Build a flat pivot table: time → { [deviceName]: water_level_pct }
-function pivotReadings(readings: HistoricalReading[]) {
+// Build a flat pivot table: time → { [deviceName]: metric_value }
+function pivotReadings(readings: HistoricalReading[], metricKey: 'water_level_pct' | 'mesh_level_pct') {
     // Sort oldest → newest for the chart X-axis
     const sorted = [...readings].sort(
         (a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
@@ -60,7 +62,7 @@ function pivotReadings(readings: HistoricalReading[]) {
 
         const timeKey = fmtTime(r.recorded_at)
         const existing = rowMap.get(timeKey) ?? { time: timeKey }
-        existing[deviceName] = r.water_level_pct
+        existing[deviceName] = (r as any)[metricKey] ?? 0
         rowMap.set(timeKey, existing)
     }
 
@@ -97,13 +99,13 @@ function CustomTooltip({ active, payload, label }: {
     )
 }
 
-export function WaterLevelTrendChart({ readings, loading }: Props) {
-    const { chartData, deviceNames } = useMemo(() => pivotReadings(readings), [readings])
+export function WaterLevelTrendChart({ readings, loading, alertThreshold, metricKey = 'water_level_pct', title = 'Water Level — Last 24 Hours' }: Props) {
+    const { chartData, deviceNames } = useMemo(() => pivotReadings(readings, metricKey), [readings, metricKey])
 
     if (loading) {
         return (
             <div className={styles.container}>
-                <h3 className={styles.title}>Water Level — Last 24 Hours</h3>
+                <h3 className={styles.title}>{title}</h3>
                 <div className={styles.loading}>
                     <div className={styles.spinner} />
                     <span>Loading trend data…</span>
@@ -115,7 +117,7 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
     if (chartData.length === 0) {
         return (
             <div className={styles.container}>
-                <h3 className={styles.title}>Water Level — Last 24 Hours</h3>
+                <h3 className={styles.title}>{title}</h3>
                 <div className={styles.empty}>No readings recorded in the last 24 hours.</div>
             </div>
         )
@@ -124,10 +126,10 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h3 className={styles.title}>Water Level — Last 24 Hours</h3>
+                <h3 className={styles.title}>{title}</h3>
                 <div className={styles.alertBadge}>
                     <span className={styles.alertDash} />
-                    Alert threshold: {ALERT_THRESHOLD_WATER_LEVEL}%
+                    Alert threshold: {alertThreshold}%
                 </div>
             </div>
 
@@ -173,7 +175,7 @@ export function WaterLevelTrendChart({ readings, loading }: Props) {
 
                     {/* Alert threshold line at 80% — label shown in the header badge */}
                     <ReferenceLine
-                        y={ALERT_THRESHOLD_WATER_LEVEL}
+                        y={alertThreshold}
                         stroke="#ef4444"
                         strokeDasharray="6 3"
                         strokeWidth={1.5}

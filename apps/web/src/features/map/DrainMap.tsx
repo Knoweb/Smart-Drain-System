@@ -168,9 +168,10 @@ export function DrainCardsGrid() {
 // ── Individual drain card with embedded map ──────────────────────────────────
 export function DrainDetailCard({ drain }: { drain: Drain }) {
     const devices = drain.iot_devices ?? []
+    const meshBuckets = drain.mesh_buckets ?? []
     const statusColor = STATUS_COLOR_MAP[drain.status] ?? '#94a3b8'
 
-    const hasDevices = devices.length > 0
+    const hasDevices = devices.length > 0 || meshBuckets.length > 0
 
     return (
         <div className={styles.card}>
@@ -243,7 +244,35 @@ export function DrainDetailCard({ drain }: { drain: Drain }) {
                                     <span style={{ color: devColor, fontSize: '0.8em' }}>{device.status}</span>
                                 </Tooltip>
                                 <Popup minWidth={220} maxWidth={260}>
-                                    <DevicePopup device={device} drainName={drain.name} />
+                                    <DevicePopup device={device as any} drainName={drain.name} />
+                                </Popup>
+                            </CircleMarker>
+                        )
+                    })}
+
+                    {/* Mesh bucket markers */}
+                    {meshBuckets.map(bucket => {
+                        const devColor = STATUS_COLOR_MAP[bucket.status] ?? '#94a3b8'
+                        return (
+                            <CircleMarker
+                                key={bucket.id}
+                                center={[bucket.latitude, bucket.longitude]}
+                                radius={7}
+                                pathOptions={{
+                                    fillColor: devColor,
+                                    fillOpacity: 1,
+                                    color: '#ffffff',
+                                    weight: 2,
+                                    dashArray: '2 2' // visual distinction
+                                }}
+                            >
+                                <Tooltip direction="top" offset={[0, -8]}>
+                                    <span>{bucket.name}</span>
+                                    <br />
+                                    <span style={{ color: devColor, fontSize: '0.8em' }}>{bucket.status}</span>
+                                </Tooltip>
+                                <Popup minWidth={220} maxWidth={260}>
+                                    <DevicePopup device={bucket as any} drainName={drain.name} />
                                 </Popup>
                             </CircleMarker>
                         )
@@ -258,7 +287,7 @@ export function DrainDetailCard({ drain }: { drain: Drain }) {
 
                 {/* Device count badge overlaid on map */}
                 <div className={styles.deviceBadge}>
-                    {devices.length} device{devices.length !== 1 ? 's' : ''}
+                    {devices.length + meshBuckets.length} node{(devices.length + meshBuckets.length) !== 1 ? 's' : ''}
                 </div>
             </div>
 
@@ -288,7 +317,7 @@ export function DrainDetailCard({ drain }: { drain: Drain }) {
                 </div>
 
                 {/* Device list under map */}
-                {devices.length > 0 && (
+                {(devices.length > 0 || meshBuckets.length > 0) && (
                     <div className={styles.deviceList}>
                         {devices.map(device => {
                             const devColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
@@ -302,10 +331,22 @@ export function DrainDetailCard({ drain }: { drain: Drain }) {
                                 </div>
                             )
                         })}
+                        {meshBuckets.map(bucket => {
+                            const devColor = STATUS_COLOR_MAP[bucket.status] ?? '#94a3b8'
+                            return (
+                                <div key={bucket.id} className={styles.deviceRow}>
+                                    <span className={styles.deviceDot} style={{ background: devColor, border: '2px dotted white' }} />
+                                    <span className={styles.deviceName}>{bucket.name} (Mesh)</span>
+                                    <span className={styles.deviceStatus} style={{ color: devColor }}>
+                                        {bucket.status}
+                                    </span>
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
 
-                {devices.length === 0 && (
+                {(devices.length === 0 && meshBuckets.length === 0) && (
                     <p className={styles.noDevices}>No IoT devices installed</p>
                 )}
             </div>

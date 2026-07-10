@@ -12,7 +12,7 @@
  */
 
 import { useLatestReading } from '@/hooks/useLatestReading'
-import type { Drain, IoTDevice } from '@/types'
+import type { Drain, IoTDevice, MeshBucket } from '@/types'
 import { STATUS_COLOR_MAP } from '@/config/constants'
 import styles from './DrainPopup.module.css'
 
@@ -41,14 +41,20 @@ export function DrainPopup({ drain }: { drain: Drain }) {
                             <span style={{ color: STATUS_COLOR_MAP[d.status] }}>{d.status}</span>
                         </div>
                     ))}
-                    {devices.length === 0 && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No devices installed.</span>}
+                    {(drain.mesh_buckets || []).map(b => (
+                        <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                            <span>{b.name}</span>
+                            <span style={{ color: STATUS_COLOR_MAP[b.status] }}>{b.status}</span>
+                        </div>
+                    ))}
+                    {(devices.length === 0 && (drain.mesh_buckets || []).length === 0) && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No devices installed.</span>}
                 </div>
             </div>
         </div>
     )
 }
 
-export function DevicePopup({ device, drainName }: { device: IoTDevice; drainName: string }) {
+export function DevicePopup({ device, drainName }: { device: IoTDevice | MeshBucket; drainName: string }) {
     const { reading, loading } = useLatestReading(device.id)
     const statusColor = STATUS_COLOR_MAP[device.status] ?? '#94a3b8'
 
@@ -70,30 +76,49 @@ export function DevicePopup({ device, drainName }: { device: IoTDevice; drainNam
                 <p className={styles.loading}>Loading readings…</p>
             ) : reading ? (
                 <div className={styles.grid}>
-                    <Metric
-                        label="Water Level"
-                        value={`${reading.water_level_pct.toFixed(1)}%`}
-                        highlight={reading.water_level_pct >= 80}
-                    />
-                    <Metric
-                        label="Pressure"
-                        value={reading.water_pressure_psi != null
-                            ? `${reading.water_pressure_psi.toFixed(1)} psi`
-                            : 'N/A'}
-                    />
-                    <Metric
-                        label="Temperature"
-                        value={reading.temperature_c != null
-                            ? `${reading.temperature_c.toFixed(1)} °C`
-                            : 'N/A'}
-                    />
-                    <Metric
-                        label="Battery"
-                        value={reading.battery_level_pct != null
-                            ? `${reading.battery_level_pct}%`
-                            : 'N/A'}
-                        highlight={(reading.battery_level_pct ?? 100) < 20}
-                    />
+                    {reading.device_type === 'mesh_bucket' ? (
+                        <>
+                            <Metric
+                                label="Mesh Level"
+                                value={`${reading.mesh_level_pct?.toFixed(1) ?? 0}%`}
+                                highlight={(reading.mesh_level_pct ?? 0) >= 80}
+                            />
+                            <Metric
+                                label="Battery"
+                                value={reading.battery_level_pct != null
+                                    ? `${reading.battery_level_pct}%`
+                                    : 'N/A'}
+                                highlight={(reading.battery_level_pct ?? 100) < 20}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Metric
+                                label="Water Level"
+                                value={`${reading.water_level_pct.toFixed(1)}%`}
+                                highlight={reading.water_level_pct >= 80}
+                            />
+                            <Metric
+                                label="Pressure"
+                                value={reading.water_pressure_psi != null
+                                    ? `${reading.water_pressure_psi.toFixed(1)} psi`
+                                    : 'N/A'}
+                            />
+                            <Metric
+                                label="Temperature"
+                                value={reading.temperature_c != null
+                                    ? `${reading.temperature_c.toFixed(1)} °C`
+                                    : 'N/A'}
+                            />
+                            <Metric
+                                label="Battery"
+                                value={reading.battery_level_pct != null
+                                    ? `${reading.battery_level_pct}%`
+                                    : 'N/A'}
+                                highlight={(reading.battery_level_pct ?? 100) < 20}
+                            />
+                        </>
+                    )}
                 </div>
             ) : (
                 <p className={styles.loading}>No readings yet</p>

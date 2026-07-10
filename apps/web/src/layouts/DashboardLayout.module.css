@@ -1,11 +1,10 @@
 /* DashboardLayout.module.css
    CSS Modules scope these styles to just this component — no name collisions. */
 
-/* ── Outer shell: sidebar | main ─────────────────────────────────────── */
 .shell {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     transition: grid-template-columns 0.25s ease;
 }
@@ -21,9 +20,11 @@
     display: flex;
     flex-direction: column;
     padding: var(--space-4) 0;
-    height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
+    z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .brand {
@@ -144,11 +145,10 @@
 .main {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
-/* ── Topbar ──────────────────────────────────────────────────────────── */
 .topbar {
     z-index: 50;
     flex-shrink: 0;
@@ -159,6 +159,28 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+@media (max-width: 1024px) {
+    .topbar {
+        padding: var(--space-3) var(--space-4);
+    }
+}
+
+.mobileHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.hamburgerBtn {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: var(--space-2);
 }
 
 .pageInfo {
@@ -228,4 +250,60 @@
     padding: var(--space-6);
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+@media (max-width: 1024px) {
+    .content {
+        padding: 0;
+    }
+}
+
+/* ── Mobile Overlay ── */
+.mobileOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+    backdrop-filter: blur(2px);
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 1024px) {
+    .shell {
+        grid-template-columns: 1fr;
+    }
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 260px;
+        transform: translateX(-100%);
+        padding-bottom: var(--space-6);
+    }
+    .shell.mobileOpen .sidebar {
+        transform: translateX(0);
+    }
+    .collapseBtn {
+        display: none;
+    }
+    .signOutBtn {
+        margin-top: auto;
+    }
+    .mobileOverlay {
+        display: block;
+    }
+    .hamburgerBtn {
+        display: block;
+    }
+    .pageSubtitle {
+        display: none; /* Hide subtitle on mobile for space */
+    }
+    .topbar {
+        padding: var(--space-3) var(--space-4);
+    }
+    .content {
+        padding: var(--space-4);
+    }
 }

@@ -26,6 +26,7 @@ const PAGE_HEADERS: Record<string, { title: string; subtitle: string }> = {
     '/': { title: 'Overview', subtitle: 'Real-time summary of all drain sensors' },
     '/map': { title: 'Drain Map', subtitle: 'Overview of drain pipelines' },
     '/sensors': { title: 'Sensor Readings', subtitle: 'Live telemetry updated via WebSockets' },
+    '/register': { title: 'Register Device', subtitle: 'Add new drains, sensors, and mesh buckets' },
     '/alerts': { title: 'System Alerts', subtitle: 'Active and historical system alerts' },
     '/reports': { title: 'Reports', subtitle: 'Export historical sensor data as CSV or PDF' },
     '/settings': { title: 'Settings', subtitle: 'Configure system preferences and alerts' },
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
     { to: '/', icon: '⊞', label: 'Dashboard' },
     { to: '/map', icon: '🗺', label: 'Drain Map' },
     { to: '/sensors', icon: '📡', label: 'Sensors' },
+    { to: '/register', icon: '➕', label: 'Register' },
     { to: '/alerts', icon: '🔔', label: 'Alerts' },
     { to: '/reports', icon: '📊', label: 'Reports' },
     { to: '/settings', icon: '⚙', label: 'Settings' },
@@ -42,6 +44,7 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
     const location = useLocation()
     const navigate = useNavigate()
     const { user } = useAuth()
@@ -66,7 +69,13 @@ export default function DashboardLayout() {
     }
 
     return (
-        <div className={`${styles.shell} ${collapsed ? styles.collapsed : ''}`}>
+        <div className={`${styles.shell} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''}`}>
+            
+            {/* Mobile Overlay */}
+            {mobileOpen && (
+                <div className={styles.mobileOverlay} onClick={() => setMobileOpen(false)} />
+            )}
+
             {/* ── Sidebar ─────────────────────────────────── */}
             <aside className={styles.sidebar}>
                 <Link to="/" className={styles.brand}>
@@ -83,6 +92,7 @@ export default function DashboardLayout() {
                             key={to}
                             to={to}
                             end={to === '/'}
+                            onClick={() => setMobileOpen(false)}
                             className={({ isActive }) =>
                                 `${styles.navItem} ${isActive ? styles.active : ''}`
                             }
@@ -114,9 +124,17 @@ export default function DashboardLayout() {
             {/* ── Main area (topbar + page content) ───────── */}
             <div className={styles.main}>
                 <header className={styles.topbar}>
-                    <div className={styles.pageInfo}>
-                        <h1 className={styles.pageTitle}>{headerInfo.title}</h1>
-                        {headerInfo.subtitle && <p className={styles.pageSubtitle}>{headerInfo.subtitle}</p>}
+                    <div className={styles.mobileHeaderLeft}>
+                        <button 
+                            className={styles.hamburgerBtn} 
+                            onClick={() => setMobileOpen(true)}
+                        >
+                            ☰
+                        </button>
+                        <div className={styles.pageInfo}>
+                            <h1 className={styles.pageTitle}>{headerInfo.title}</h1>
+                            {headerInfo.subtitle && <p className={styles.pageSubtitle}>{headerInfo.subtitle}</p>}
+                        </div>
                     </div>
                     <div className={styles.topbarRight}>
                         <span className={styles.liveBadge}>● LIVE</span>
