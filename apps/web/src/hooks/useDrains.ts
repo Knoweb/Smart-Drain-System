@@ -13,6 +13,7 @@ import { ref, onValue, off } from 'firebase/database'
 import { db } from '@/lib/firebase'
 import { toSensorReading, buildDrains } from '@/lib/firebaseData'
 import type { Drain, SensorReading } from '@/types'
+import { useSettings } from '@/hooks/useSettings'
 
 interface UseDrainsResult {
   drains: Drain[]
@@ -22,6 +23,7 @@ interface UseDrainsResult {
 }
 
 export function useDrains(): UseDrainsResult {
+  const settings = useSettings()
   const [drains, setDrains]   = useState<Drain[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
@@ -50,7 +52,7 @@ export function useDrains(): UseDrainsResult {
             toSensorReading(key, val as any)
           )
 
-          setDrains(buildDrains(readings))
+          setDrains(buildDrains(readings, settings.thresholds))
         } catch (e: any) {
           setError(e.message ?? 'Failed to parse database data')
         } finally {
@@ -64,7 +66,7 @@ export function useDrains(): UseDrainsResult {
     )
 
     return () => off(dbRef, 'value', unsubscribe as any)
-  }, [tick])
+  }, [tick, settings.thresholds])
 
   return {
     drains,

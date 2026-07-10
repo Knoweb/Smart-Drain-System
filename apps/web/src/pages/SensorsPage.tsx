@@ -1,5 +1,6 @@
 import { useDrains } from '@/hooks/useDrains'
 import { SensorCard } from '@/features/sensors/SensorCard'
+import { MeshBucketCard } from '@/features/sensors/MeshBucketCard'
 import styles from './Page.module.css'
 
 export default function SensorsPage() {
@@ -23,17 +24,22 @@ export default function SensorsPage() {
                 <div className={styles.groupsContainer} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     {drains.map(drain => {
                         const devices = drain.iot_devices || []
+                        const buckets = drain.mesh_buckets || []
+
                         return (
                             <div key={drain.id} className={styles.drainGroup}>
                                 <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>
                                     {drain.name}
                                 </h3>
-                                {devices.length === 0 ? (
+                                {(devices.length === 0 && buckets.length === 0) ? (
                                     <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No IoT devices configured for this drain.</p>
                                 ) : (
                                     <div className={styles.grid}>
                                         {devices.map(device => (
                                             <SensorCard key={device.id} device={device} drainName={drain.name} />
+                                        ))}
+                                        {buckets.map(bucket => (
+                                            <MeshBucketCard key={bucket.id} bucket={bucket} drainName={drain.name} />
                                         ))}
                                     </div>
                                 )}

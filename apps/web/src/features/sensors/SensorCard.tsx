@@ -10,13 +10,56 @@ import { useLatestReading } from '@/hooks/useLatestReading'
 import { useDeviceReadings } from '@/hooks/useDeviceReadings'
 import type { IoTDevice } from '@/types'
 import { STATUS_COLOR_MAP } from '@/config/constants'
-import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import { ResponsiveContainer, AreaChart, Area } from 'recharts'
 import styles from './SensorCard.module.css'
 
 interface Props {
     device: IoTDevice
     drainName: string
 }
+
+// --- Realistic Water Bucket SVG ---
+const WaterBucket = ({ level, color }: { level: number, color: string }) => {
+    // Map level 0-100 to y position (bottom is y=110, top is y=30)
+    const fillY = 110 - (level / 100) * 80;
+
+    return (
+        <svg width="80" height="120" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="bucketGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#4aa3df" />
+                    <stop offset="50%" stopColor="#75bced" />
+                    <stop offset="100%" stopColor="#2c82b8" />
+                </linearGradient>
+                <clipPath id="bucketClip">
+                    <path d="M15,30 L85,30 L75,110 Q50,120 25,110 Z" />
+                </clipPath>
+            </defs>
+
+            {/* Handle */}
+            <path d="M10,35 Q50,-5 90,35" fill="none" stroke="#334155" strokeWidth="4" strokeLinecap="round" />
+            <circle cx="15" cy="35" r="4" fill="#334155" />
+            <circle cx="85" cy="35" r="4" fill="#334155" />
+
+            {/* Bucket Back inside */}
+            <ellipse cx="50" cy="30" rx="35" ry="8" fill="#1e40af" />
+
+            {/* Water Fill clipped to bucket shape */}
+            <g clipPath="url(#bucketClip)">
+                <rect x="0" y={fillY} width="100" height="130" fill={color} />
+                <ellipse cx="50" cy={fillY} rx="35" ry="6" fill="#ffffff" opacity="0.3" />
+            </g>
+
+            {/* Bucket Front (Semi-transparent plastic) */}
+            <path d="M15,30 L85,30 L75,110 Q50,120 25,110 Z" fill="url(#bucketGrad)" opacity="0.4" />
+
+            {/* Top Rim */}
+            <ellipse cx="50" cy="30" rx="35" ry="8" fill="none" stroke="#75bced" strokeWidth="4" />
+            {/* Highlight */}
+            <path d="M25,40 L20,100" fill="none" stroke="#ffffff" strokeWidth="3" opacity="0.6" strokeLinecap="round" />
+        </svg>
+    );
+};
 
 export function SensorCard({ device, drainName }: Props) {
     const { reading, loading } = useLatestReading(device.id)
@@ -29,7 +72,7 @@ export function SensorCard({ device, drainName }: Props) {
                 <div className={styles.header}>
                     <div>
                         <h3 className={styles.name}>{device.name}</h3>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{drainName}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>{drainName}</div>
                     </div>
                     <span className={styles.badge} style={{ color: statusColor, borderColor: statusColor }}>
                         {device.status}
@@ -42,22 +85,31 @@ export function SensorCard({ device, drainName }: Props) {
         )
     }
 
-    // --- Gauge Data Prep ---
-    const waterColor = reading.water_level_pct >= 80 ? '#ef4444'
-        : reading.water_level_pct >= 60 ? '#f59e0b'
-            : '#3b82f6'
+    // --- Data Prep ---
+    const primaryLevel = device.device_type === 'mesh_bucket'
+        ? (reading.mesh_level_pct ?? reading.water_level_pct ?? 0)
+        : (reading.water_level_pct ?? 0)
 
-    const batteryColor = (reading.battery_level_pct ?? 100) < 20 ? '#ef4444' : '#22c55e'
+    const levelColor = device.device_type === 'mesh_bucket'
+        ? (primaryLevel >= 70 ? '#ef4444' : primaryLevel >= 50 ? '#f59e0b' : '#8b5cf6') // Purple for garbage
+        : (primaryLevel >= 70 ? '#ef4444' : primaryLevel >= 50 ? '#f59e0b' : '#3b82f6') // Blue for water
+
+    const batteryLevel = reading.battery_level_pct ?? 100
+    const batteryColor = batteryLevel < 20 ? '#ef4444' : '#22c55e'
 
     // Sparkline: map readings to {v} objects for Recharts
-    const sparkPoints = sparkData.map(r => ({ v: r.water_level_pct }))
+    const sparkPoints = sparkData.map(r => ({
+        v: device.device_type === 'mesh_bucket'
+            ? (r.mesh_level_pct ?? r.water_level_pct ?? 0)
+            : (r.water_level_pct ?? 0)
+    }))
 
     return (
         <div className={styles.card}>
             <div className={styles.header}>
                 <div>
                     <h3 className={styles.name}>{device.name}</h3>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{drainName}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>{drainName}</div>
                 </div>
                 <span className={styles.badge} style={{ color: statusColor, borderColor: statusColor }}>
                     {device.status}
@@ -65,61 +117,26 @@ export function SensorCard({ device, drainName }: Props) {
             </div>
 
             <div className={styles.gaugesRow}>
-                {/* Water Level Gauge */}
-                <div className={styles.gaugeContainer}>
-                    <ResponsiveContainer width={120} height={120}>
-                        <RadialBarChart
-                            cx="50%" cy="50%"
-                            innerRadius="70%" outerRadius="100%"
-                            barSize={10}
-                            data={[{ value: reading.water_level_pct, fill: waterColor }]}
-                            startAngle={210} endAngle={-30}
-                        >
-                            <PolarAngleAxis
-                                type="number"
-                                domain={[0, 100]}
-                                angleAxisId={0}
-                                tick={false}
-                            />
-                            <RadialBar
-                                background={{ fill: 'var(--surface-border)' }}
-                                dataKey="value"
-                                cornerRadius={10}
-                            />
-                        </RadialBarChart>
-                    </ResponsiveContainer>
-                    <div className={styles.gaugeLabel}>
-                        <span className={styles.gaugeValue}>{reading.water_level_pct.toFixed(0)}%</span>
-                        <span className={styles.gaugeDesc}>Water Level</span>
+                {/* Visual Water/Garbage Tank */}
+                <div className={styles.visualContainer}>
+                    <WaterBucket level={primaryLevel} color={levelColor} />
+                    <div className={styles.visualLabel}>
+                        <span className={styles.visualValue} style={{ color: levelColor }}>{primaryLevel.toFixed(0)}%</span>
+                        <span className={styles.visualDesc}>{device.device_type === 'mesh_bucket' ? 'Garbage Level' : 'Water Level'}</span>
                     </div>
                 </div>
 
-                {/* Battery Gauge */}
-                <div className={styles.gaugeContainer}>
-                    <ResponsiveContainer width={100} height={100}>
-                        <RadialBarChart
-                            cx="50%" cy="50%"
-                            innerRadius="70%" outerRadius="100%"
-                            barSize={8}
-                            data={[{ value: reading.battery_level_pct ?? 0, fill: batteryColor }]}
-                            startAngle={210} endAngle={-30}
-                        >
-                            <PolarAngleAxis
-                                type="number"
-                                domain={[0, 100]}
-                                angleAxisId={0}
-                                tick={false}
-                            />
-                            <RadialBar
-                                background={{ fill: 'var(--surface-border)' }}
-                                dataKey="value"
-                                cornerRadius={10}
-                            />
-                        </RadialBarChart>
-                    </ResponsiveContainer>
-                    <div className={styles.gaugeLabel}>
-                        <span className={styles.gaugeValue}>{reading.battery_level_pct ?? '--'}%</span>
-                        <span className={styles.gaugeDesc}>Battery</span>
+                {/* Visual Battery */}
+                <div className={styles.visualContainer} style={{ justifyContent: 'flex-end', height: '100%', paddingBottom: '10px' }}>
+                    <div className={styles.batteryIcon}>
+                        <div
+                            className={styles.batteryFill}
+                            style={{ width: `${batteryLevel}%`, backgroundColor: batteryColor }}
+                        />
+                    </div>
+                    <div className={styles.visualLabel} style={{ marginTop: '12px' }}>
+                        <span className={styles.visualValue} style={{ color: batteryColor }}>{batteryLevel}%</span>
+                        <span className={styles.visualDesc}>Battery</span>
                     </div>
                 </div>
             </div>
@@ -139,7 +156,7 @@ export function SensorCard({ device, drainName }: Props) {
                 </div>
             </div>
 
-            {/* ── Sparkline: last 20 water level readings ── */}
+            {/* ── Sparkline ── */}
             {sparkPoints.length > 1 && (
                 <div className={styles.sparklineWrapper}>
                     <span className={styles.sparklineLabel}>Water level trend</span>
@@ -147,15 +164,15 @@ export function SensorCard({ device, drainName }: Props) {
                         <AreaChart data={sparkPoints} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id={`spark-${device.id}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%"  stopColor={waterColor} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={waterColor} stopOpacity={0.02} />
+                                    <stop offset="5%" stopColor={levelColor} stopOpacity={0.4} />
+                                    <stop offset="95%" stopColor={levelColor} stopOpacity={0.02} />
                                 </linearGradient>
                             </defs>
                             <Area
                                 type="monotone"
                                 dataKey="v"
-                                stroke={waterColor}
-                                strokeWidth={1.5}
+                                stroke={levelColor}
+                                strokeWidth={2}
                                 fill={`url(#spark-${device.id})`}
                                 dot={false}
                                 isAnimationActive={false}

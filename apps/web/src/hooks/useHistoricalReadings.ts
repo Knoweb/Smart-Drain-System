@@ -25,8 +25,8 @@ export type TimeRange = '24h' | '7d' | 'all'
 
 export function useHistoricalReadings(timeRange: TimeRange, deviceId: string | 'all') {
   const [readings, setReadings] = useState<HistoricalReading[]>([])
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -60,7 +60,7 @@ export function useHistoricalReadings(timeRange: TimeRange, deviceId: string | '
 
           // ── Filter by deviceId ──────────────────────────────────────────
           if (deviceId !== 'all') {
-            entries = entries.filter(r => r.device_id === deviceId)
+            entries = entries.filter(r => r.device_id === deviceId || r.sub_id === deviceId)
           }
 
           // ── Filter by time range ────────────────────────────────────────
