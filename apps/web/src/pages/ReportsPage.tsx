@@ -3,11 +3,13 @@ import { useDrains } from '@/hooks/useDrains'
 import { useHistoricalReadings, TimeRange } from '@/hooks/useHistoricalReadings'
 import { exportToCSV, exportToPDF } from '@/lib/exportUtils'
 import { HistoricalChart } from '@/features/reports/HistoricalChart'
+import { useSettings } from '@/hooks/useSettings'
 import styles from './ReportsPage.module.css'
 import pageStyles from './Page.module.css'
 
 export default function ReportsPage() {
     const { drains } = useDrains()
+    const settings = useSettings()
     const [timeRange, setTimeRange] = useState<TimeRange>('24h')
     const [selectedDevice, setSelectedDevice] = useState<string>('all')
 
@@ -48,6 +50,9 @@ export default function ReportsPage() {
                                 {(d.iot_devices || []).map(device => (
                                     <option key={device.id} value={device.id}>{device.name}</option>
                                 ))}
+                                {(d.mesh_buckets || []).map(bucket => (
+                                    <option key={bucket.id} value={bucket.id}>{bucket.name}</option>
+                                ))}
                             </optgroup>
                         ))}
                     </select>
@@ -84,6 +89,7 @@ export default function ReportsPage() {
                     loading={loading}
                     timeRange={timeRange}
                     deviceId={selectedDevice}
+                    alertThreshold={settings.thresholds.water_warning}
                 />
             </div>
 
@@ -101,9 +107,10 @@ export default function ReportsPage() {
                         <thead>
                             <tr>
                                 <th>Date / Time</th>
-                                <th>Drain</th>
-                                <th>Device</th>
+                                <th>Location</th>
+                                <th>Sensor Name</th>
                                 <th>Water Level</th>
+                                <th>Garbage Level</th>
                                 <th>Pressure</th>
                                 <th>Temp</th>
                                 <th>Battery</th>
@@ -116,14 +123,28 @@ export default function ReportsPage() {
                                     <td>{r.iot_devices?.drains?.name ?? 'Unknown'}</td>
                                     <td>{r.iot_devices?.name ?? 'Unknown'}</td>
                                     <td>
-                                        <span style={{
-                                            color: r.water_level_pct >= 80 ? '#ef4444'
-                                                : r.water_level_pct >= 60 ? '#f59e0b'
-                                                    : 'inherit',
-                                            fontWeight: r.water_level_pct >= 80 ? 600 : 400,
-                                        }}>
-                                            {r.water_level_pct}%
-                                        </span>
+                                        {r.device_type === 'drain_sensor' ? (
+                                            <span style={{
+                                                color: r.water_level_pct >= 80 ? '#ef4444'
+                                                    : r.water_level_pct >= 60 ? '#f59e0b'
+                                                        : 'inherit',
+                                                fontWeight: r.water_level_pct >= 80 ? 600 : 400,
+                                            }}>
+                                                {r.water_level_pct}%
+                                            </span>
+                                        ) : '-'}
+                                    </td>
+                                    <td>
+                                        {r.device_type === 'mesh_bucket' ? (
+                                            <span style={{
+                                                color: (r.mesh_level_pct ?? r.water_level_pct ?? 0) >= 80 ? '#ef4444'
+                                                    : (r.mesh_level_pct ?? r.water_level_pct ?? 0) >= 60 ? '#f59e0b'
+                                                        : 'inherit',
+                                                fontWeight: (r.mesh_level_pct ?? r.water_level_pct ?? 0) >= 80 ? 600 : 400,
+                                            }}>
+                                                {r.mesh_level_pct ?? r.water_level_pct ?? 0}%
+                                            </span>
+                                        ) : '-'}
                                     </td>
                                     <td>{r.water_pressure_psi != null ? `${r.water_pressure_psi.toFixed(1)} PSI` : '-'}</td>
                                     <td>{r.temperature_c != null ? `${r.temperature_c.toFixed(1)} °C` : '-'}</td>

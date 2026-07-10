@@ -100,7 +100,7 @@ a {
 
 html.light {
   /* --- Surface Colors (light theme) --- */
-  --surface-bg: #f8fafc;          /* Page background */
+  --surface-bg: #f4f7fe;          /* Page background */
   --surface-card: #ffffff;        /* Card / panel background */
   --surface-card-hover: #f1f5f9;
   --surface-border: #e2e8f0;      /* Subtle borders */

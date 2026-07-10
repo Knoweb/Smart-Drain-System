@@ -26,6 +26,7 @@ import AlertsPage from '@/pages/AlertsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import SettingsPage from '@/pages/SettingsPage'
 import LoginPage from '@/pages/LoginPage'
+import RegisterPage from '@/pages/RegisterPage'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -45,6 +46,7 @@ export default function App() {
                             <Route path="/" element={<DashboardPage />} />
                             <Route path="/map" element={<MapPage />} />
                             <Route path="/sensors" element={<SensorsPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
                             <Route path="/alerts" element={<AlertsPage />} />
                             <Route path="/reports" element={<ReportsPage />} />
                             <Route path="/settings" element={<SettingsPage />} />

@@ -7,7 +7,10 @@
  */
 
 /** Water level % above which an alert is triggered */
-export const ALERT_THRESHOLD_WATER_LEVEL = 80
+export const ALERT_THRESHOLD_WATER_LEVEL = 70
+
+/** Mesh bucket garbage level % above which an alert is triggered */
+export const ALERT_THRESHOLD_MESH_LEVEL = 70
 
 /** Battery % below which a LOW_BATTERY alert fires */
 export const ALERT_THRESHOLD_BATTERY = 20

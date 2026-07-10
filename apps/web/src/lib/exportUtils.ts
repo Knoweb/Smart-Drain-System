@@ -3,12 +3,15 @@ import autoTable from 'jspdf-autotable'
 import type { HistoricalReading } from '@/hooks/useHistoricalReadings'
 
 export function exportToCSV(readings: HistoricalReading[], filename = 'report.csv') {
-    const headers = ['Date', 'Drain Name', 'Water Level (%)', 'Pressure (PSI)', 'Temperature (C)', 'Battery (%)']
+    const headers = ['Date', 'Drain Location', 'Sensor Name', 'Sensor Type', 'Water Level (%)', 'Garbage Level (%)', 'Pressure (PSI)', 'Temperature (C)', 'Battery (%)']
     
     const rows = readings.map(r => [
         new Date(r.recorded_at).toLocaleString(),
-        r.drains?.name ?? 'Unknown',
-        r.water_level_pct,
+        r.iot_devices?.drains?.name ?? 'Unknown',
+        r.iot_devices?.name ?? 'Unknown',
+        r.device_type === 'mesh_bucket' ? 'Mesh Bucket' : 'Water Sensor',
+        r.water_level_pct ?? '',
+        r.mesh_level_pct ?? '',
         r.water_pressure_psi ?? '',
         r.temperature_c ?? '',
         r.battery_level_pct ?? ''
@@ -32,12 +35,14 @@ export function exportToCSV(readings: HistoricalReading[], filename = 'report.cs
 export function exportToPDF(readings: HistoricalReading[], filename = 'report.pdf') {
     const doc = new jsPDF()
 
-    const headers = [['Date / Time', 'Drain Name', 'Water Level', 'Pressure', 'Temp', 'Battery']]
+    const headers = [['Date / Time', 'Location', 'Sensor Name', 'Water Lvl', 'Garbage', 'Pressure', 'Temp', 'Battery']]
     
     const data = readings.map(r => [
         new Date(r.recorded_at).toLocaleString(),
-        r.drains?.name ?? 'Unknown',
-        `${r.water_level_pct}%`,
+        r.iot_devices?.drains?.name ?? 'Unknown',
+        r.iot_devices?.name ?? 'Unknown',
+        r.device_type === 'drain_sensor' ? `${r.water_level_pct}%` : '-',
+        r.device_type === 'mesh_bucket' ? `${r.mesh_level_pct}%` : '-',
         r.water_pressure_psi != null ? `${r.water_pressure_psi.toFixed(1)} PSI` : '-',
         r.temperature_c != null ? `${r.temperature_c.toFixed(1)} °C` : '-',
         r.battery_level_pct != null ? `${r.battery_level_pct}%` : '-'

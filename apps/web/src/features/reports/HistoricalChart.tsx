@@ -25,7 +25,6 @@ import {
 import { useMemo } from 'react'
 import type { HistoricalReading } from '@/hooks/useHistoricalReadings'
 import type { TimeRange } from '@/hooks/useHistoricalReadings'
-import { ALERT_THRESHOLD_WATER_LEVEL } from '@/config/constants'
 import styles from './HistoricalChart.module.css'
 
 interface Props {
@@ -33,6 +32,7 @@ interface Props {
     loading: boolean
     timeRange: TimeRange
     deviceId: string
+    alertThreshold: number
 }
 
 // ── Timestamp formatters ─────────────────────────────────────────────────────
@@ -63,7 +63,7 @@ function prepareData(readings: HistoricalReading[], range: TimeRange): ChartRow[
     )
     return sorted.map(r => ({
         label: fmtLabel(r.recorded_at, range),
-        waterLevel: r.water_level_pct,
+        waterLevel: r.device_type === 'mesh_bucket' ? (r.mesh_level_pct ?? 0) : r.water_level_pct,
         temperature: r.temperature_c ?? null,
         pressure: r.water_pressure_psi ?? null,
         battery: r.battery_level_pct ?? null,
@@ -85,7 +85,7 @@ function CustomTooltip({ active, payload, label }: {
     if (!active || !payload?.length) return null
 
     const UNITS: Record<string, string> = {
-        'Water Level': '%',
+        'Level': '%',
         'Temperature': '°C',
         'Pressure': ' psi',
         'Battery': '%',
@@ -101,7 +101,7 @@ function CustomTooltip({ active, payload, label }: {
                     <span
                         className={styles.tooltipVal}
                         style={{
-                            color: p.name === 'Water Level' && p.value >= 80
+                            color: p.name === 'Level' && p.value >= 80
                                 ? '#ef4444'
                                 : p.name === 'Battery' && p.value < 20
                                     ? '#ef4444'
@@ -117,7 +117,7 @@ function CustomTooltip({ active, payload, label }: {
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
-export function HistoricalChart({ readings, loading, timeRange, deviceId }: Props) {
+export function HistoricalChart({ readings, loading, timeRange, deviceId, alertThreshold }: Props) {
     const data = useMemo(() => prepareData(readings, timeRange), [readings, timeRange])
 
     const rangeLabel = timeRange === '24h' ? 'Last 24 Hours'
@@ -167,7 +167,7 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId }: Prop
                 </div>
                 <div className={styles.alertBadge}>
                     <span className={styles.alertDash} />
-                    Alert at {ALERT_THRESHOLD_WATER_LEVEL}%
+                    Alert at {alertThreshold}%
                 </div>
             </div>
 
@@ -222,7 +222,7 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId }: Prop
                     {/* Alert threshold */}
                     <ReferenceLine
                         yAxisId="pct"
-                        y={ALERT_THRESHOLD_WATER_LEVEL}
+                        y={alertThreshold}
                         stroke="#ef4444"
                         strokeDasharray="6 3"
                         strokeWidth={1.5}
@@ -245,7 +245,7 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId }: Prop
                         yAxisId="pct"
                         type="monotone"
                         dataKey="waterLevel"
-                        name="Water Level"
+                        name="Level"
                         stroke="#3b82f6"
                         strokeWidth={2.5}
                         fill="url(#waterGradient)"
