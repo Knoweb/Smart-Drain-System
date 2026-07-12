@@ -16,7 +16,7 @@ export const ALERT_THRESHOLD_MESH_LEVEL = 70
 export const ALERT_THRESHOLD_BATTERY = 20
 
 /** Map center coordinates — Colombo, Sri Lanka */
-export const MAP_CENTER: [number, number] = [6.9271, 79.8612]
+export const MAP_CENTER: [number, number] = [6.949825, 79.880478]
 
 /** Default map zoom level */
 export const MAP_DEFAULT_ZOOM = 13

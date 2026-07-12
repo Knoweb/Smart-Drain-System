@@ -115,7 +115,7 @@ function LocationPanel({ location, setLocation, position, setPosition, search, s
                         </button>
                     </div>
                     <MapContainer
-                        center={[6.9271, 79.8612]}
+                        center={[6.949825, 79.880478]}
                         zoom={12}
                         style={{ height: '100%', width: '100%', zIndex: 0 }}
                     >
@@ -154,7 +154,7 @@ function ParentSelector({
     const hasExisting = existingSystems.length > 0
     const label       = type === 'drain' ? 'Drain System' : 'Mesh Bucket'
     const subLabel    = type === 'drain' ? 'System' : 'Bucket'
-    const placeholder = type === 'drain' ? 'e.g. Kelaniya Drain' : 'e.g. Pettah Market'
+    const placeholder = type === 'drain' ? 'e.g. Orugodawatte Drain' : 'e.g. Pettah Market'
 
     return (
         <div className={styles.fieldGroup}>
@@ -301,9 +301,9 @@ export default function RegisterPage() {
                     device_id: 'Device-01',
                     device_name: 'Main Drain Sensor',
                     device_type: 'drain_sensor',
-                    location: 'Kelaniya Main Canal',
-                    latitude: 6.9533,
-                    longitude: 79.9140,
+                    location: 'Orugodawatte Main Canal',
+                    latitude: 6.949825,
+                    longitude: 79.880478,
                     registered_at: '2024-01-01T00:00:00.000Z'
                 },
                 {
@@ -313,9 +313,9 @@ export default function RegisterPage() {
                     device_id: 'Device-02',
                     device_name: 'Main Mesh Bucket',
                     device_type: 'mesh_bucket',
-                    location: 'Kelaniya Main Canal',
-                    latitude: 6.9533,
-                    longitude: 79.9140,
+                    location: 'Orugodawatte Main Canal',
+                    latitude: 6.949825,
+                    longitude: 79.880478,
                     registered_at: '2024-01-01T00:00:00.000Z'
                 }
             ]

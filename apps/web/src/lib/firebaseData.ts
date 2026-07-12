@@ -26,8 +26,8 @@ import type {
 // ── Static device metadata ────────────────────────────────────────────────────
 // Add the GPS coordinates and friendly name for each device_id here.
 export const DEVICE_META: Record<string, { name: string; location_name: string; lat: number; lng: number }> = {
-  smart_drain_01: { name: 'Smart Drain 01', location_name: 'Kelaniya, Sri Lanka', lat: 6.9546, lng: 79.9175 },
-  mesh_bucket_01: { name: 'Mesh Bucket 01', location_name: 'Kelaniya, Sri Lanka', lat: 6.9546, lng: 79.9175 },
+  smart_drain_01: { name: 'Smart Drain 01', location_name: 'Orugodawatte, Sri Lanka', lat: 6.949825, lng: 79.880478 },
+  mesh_bucket_01: { name: 'Mesh Bucket 01', location_name: 'Orugodawatte, Sri Lanka', lat: 6.949825, lng: 79.880478 },
 }
 
 /** Format a device_id slug into a human label */
@@ -57,11 +57,11 @@ export function toSensorReading(key: string, raw: Omit<FirebaseReading, 'key'>):
   let subId = raw.sub_id ?? 'unknown_device';
 
   // HARDWARE MISTAKE FIX: Hardware sent the different devices as completely separate systems (device_id)
-  // We force them to be grouped under a single 'kelaniya_drain_system' 
+  // We force them to be grouped under a single 'orugodawatte_drain_system' 
   // and make their original device_id the sub_id so they appear correctly.
-  if (deviceId !== 'unknown' && deviceId !== 'kelaniya_drain_system') {
+  if (deviceId !== 'unknown' && deviceId !== 'orugodawatte_drain_system') {
     subId = deviceId;
-    deviceId = 'kelaniya_drain_system';
+    deviceId = 'orugodawatte_drain_system';
   }
 
   // Normalize subId consistently to fix hardware reporting differences (e.g. spaces vs underscores)
@@ -153,8 +153,8 @@ export function buildDrains(
         drain_id: deviceId,
         name: formatSensorName(subId, 'drain_sensor'),
         device_type: 'drain_sensor',
-        latitude: latestDeviceReading.latitude ?? DEVICE_META[deviceId]?.lat ?? 6.9271,
-        longitude: latestDeviceReading.longitude ?? DEVICE_META[deviceId]?.lng ?? 79.8612,
+        latitude: latestDeviceReading.latitude ?? DEVICE_META[deviceId]?.lat ?? 6.949825,
+        longitude: latestDeviceReading.longitude ?? DEVICE_META[deviceId]?.lng ?? 79.880478,
         status,
         created_at: latestDeviceReading.recorded_at,
       })
@@ -181,8 +181,8 @@ export function buildDrains(
         name: formatSensorName(subId, 'mesh_bucket'),
         mesh_level_pct: meshLevel,
         battery_level_pct: latestMeshReading.battery_level_pct,
-        latitude: latestMeshReading.latitude ?? DEVICE_META[deviceId]?.lat ?? 6.9271,
-        longitude: latestMeshReading.longitude ?? DEVICE_META[deviceId]?.lng ?? 79.8612,
+        latitude: latestMeshReading.latitude ?? DEVICE_META[deviceId]?.lat ?? 6.949825,
+        longitude: latestMeshReading.longitude ?? DEVICE_META[deviceId]?.lng ?? 79.880478,
         status,
         recorded_at: latestMeshReading.recorded_at,
       })
@@ -211,8 +211,8 @@ export function buildDrains(
       id: deviceId,
       name,
       location_name: meta?.location_name ?? 'Unknown Location',
-      latitude: latestDrainReading.latitude ?? meta?.lat ?? 6.9271,
-      longitude: latestDrainReading.longitude ?? meta?.lng ?? 79.8612,
+      latitude: latestDrainReading.latitude ?? meta?.lat ?? 6.949825,
+      longitude: latestDrainReading.longitude ?? meta?.lng ?? 79.880478,
       baseline_depth_cm: null,
       status,
       water_level_pct: latestWaterReading?.water_level_pct ?? 0,
