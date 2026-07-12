@@ -48,8 +48,8 @@ export default function DashboardPage() {
                 temperature_c: 28,
                 battery_level_pct: 85,
                 timestamp: now,
-                latitude: 6.9271,
-                longitude: 79.8612
+                latitude: 6.949825,
+                longitude: 79.880478
             },
             'reading_drain_01_mesh1': {
                 device_id: 'smart_drain_01',
@@ -58,8 +58,8 @@ export default function DashboardPage() {
                 mesh_level_pct: 12,
                 battery_level_pct: 90,
                 timestamp: now,
-                latitude: 6.9271,
-                longitude: 79.8612
+                latitude: 6.949825,
+                longitude: 79.880478
             }
         };
         
@@ -74,7 +74,7 @@ export default function DashboardPage() {
     const countByStatus = (status: DrainStatus) =>
         drains.filter(d => d.status === status).length
 
-    // Get the primary drain (Kelaniya Drain System)
+    // Get the primary drain (Orugodawatte Drain System)
     const primaryDrain = drains.length > 0 ? drains[0] : null;
     const smartDrain = primaryDrain?.iot_devices?.[0];
     const meshBucket = primaryDrain?.mesh_buckets?.[0];
@@ -154,8 +154,16 @@ export default function DashboardPage() {
 
             {!drainsLoading && primaryDrain ? (
                 <>
-                    {/* TOP ROW: Stat Cards */}
-                    <div className={styles.statGrid}>
+                    {/* TOP SECTION: System Status & Stat Cards */}
+                    <div className={styles.topSection}>
+                        {/* System Status Pie Chart */}
+                        <div className={styles.pieCard} onClick={() => navigate('/sensors')} style={{ flex: '1 1 300px' }}>
+                            <h3 className={styles.chartTitle} style={{ marginBottom: '1rem', width: '100%', textAlign: 'left' }}>System Status</h3>
+                            <StatusPieChart drains={drains} />
+                        </div>
+
+                        {/* Stat Cards */}
+                        <div className={styles.statGrid} style={{ flex: '3 1 600px', margin: 0 }}>
                         <div className={`${styles.statCard} ${styles.bgBlue}`} onClick={() => navigate('/sensors')}>
                             <div className={`${styles.statIconWrapper} ${styles.blue}`}>🌊</div>
                             <div className={styles.statContent}>
@@ -168,7 +176,7 @@ export default function DashboardPage() {
                             <div className={`${styles.statIconWrapper} ${primaryStatusClass}`}>🛡️</div>
                             <div className={styles.statContent}>
                                 <span className={styles.statLabel}>{primaryDrain.name}</span>
-                                <span className={styles.statValue} style={{ fontSize: '1.2rem', color: primaryStatusColor }}>
+                                <span className={styles.statValue} style={{ color: primaryStatusColor }}>
                                     {primaryDrain.status}
                                 </span>
                             </div>
@@ -179,7 +187,7 @@ export default function DashboardPage() {
                                 <div className={`${styles.statIconWrapper} ${styles.cyan}`}>💧</div>
                                 <div className={styles.statContent}>
                                     <span className={styles.statLabel}>{smartDrain.name}</span>
-                                    <span className={styles.statValue}>{currentWaterLevel}% <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Water</span></span>
+                                    <span className={styles.statValue}>{currentWaterLevel}% <span style={{fontSize: '1.1rem', color: 'var(--text-muted)'}}>Water</span></span>
                                 </div>
                             </div>
                         )}
@@ -189,10 +197,11 @@ export default function DashboardPage() {
                                 <div className={`${styles.statIconWrapper} ${styles.purple}`}>🗑️</div>
                                 <div className={styles.statContent}>
                                     <span className={styles.statLabel}>{meshBucket.name}</span>
-                                    <span className={styles.statValue}>{currentGarbageLevel}% <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Garbage</span></span>
+                                    <span className={styles.statValue}>{currentGarbageLevel}% <span style={{fontSize: '1.1rem', color: 'var(--text-muted)'}}>Garbage</span></span>
                                 </div>
                             </div>
                         )}
+                        </div>
                     </div>
 
                     {/* CHARTS CONTAINER (allows reordering on mobile) */}
@@ -236,14 +245,8 @@ export default function DashboardPage() {
                                 <div className={`${styles.alertValue} ${styles.warning}`}>{settings.thresholds.mesh_warning}%</div>
                             </div>
                             
-                            {/* System Status in Middle Row right col to match Pinterest balance card style */}
-                            <div className={styles.pieCard} onClick={() => navigate('/sensors')} style={{ flex: 1 }}>
-                                <h3 className={styles.chartTitle} style={{ marginBottom: '1rem', width: '100%', textAlign: 'left' }}>System Status</h3>
-                                <StatusPieChart drains={drains} />
                             </div>
                         </div>
-                    </div>
-
                         {/* BOTTOM ROW: Garbage Chart and Video */}
                         <div className={`${styles.bottomRow} ${styles.garbageRow}`} id="garbage-chart">
                             <div className={`${styles.chartCard} ${styles.garbageChartWrapper}`} style={{ cursor: 'default' }}>
@@ -272,7 +275,7 @@ export default function DashboardPage() {
                                 </div>
                                 <div>
                                     <h3 className={styles.insightsTitle}>Live Insights</h3>
-                                    <span className={styles.insightsSubtitle}>Kelaniya Region</span>
+                                    <span className={styles.insightsSubtitle}>Orugodawatte Region</span>
                                 </div>
                             </div>
                             
@@ -297,10 +300,10 @@ export default function DashboardPage() {
                                         <span>{batteryInsightText}</span>
                                     </div>
                                 </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 </>
             ) : (
                 <div className={styles.emptyState}>
