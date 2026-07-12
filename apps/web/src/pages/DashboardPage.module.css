@@ -36,16 +36,29 @@
     margin: 0;
 }
 
+/* ── Top Section ── */
+.topSection {
+    display: flex;
+    gap: var(--space-6);
+    align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+    .topSection {
+        flex-direction: column;
+    }
+}
+
 /* ── Top Row: Stat Cards ── */
 .statGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-6);
 }
 
 @media (max-width: 600px) {
     .statGrid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: var(--space-3);
     }
 }
@@ -111,28 +124,28 @@
 .statIconWrapper.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
 .bgBlue {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%) !important;
-    border-color: rgba(59, 130, 246, 0.25) !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.15) 100%) !important;
+    border-color: rgba(59, 130, 246, 0.4) !important;
 }
 .bgCyan {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0.05) 100%) !important;
-    border-color: rgba(6, 182, 212, 0.25) !important;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.4) 0%, rgba(6, 182, 212, 0.15) 100%) !important;
+    border-color: rgba(6, 182, 212, 0.4) !important;
 }
 .bgPurple {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 100%) !important;
-    border-color: rgba(168, 85, 247, 0.25) !important;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0.15) 100%) !important;
+    border-color: rgba(168, 85, 247, 0.4) !important;
 }
 .bgEmerald {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
-    border-color: rgba(16, 185, 129, 0.25) !important;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(16, 185, 129, 0.15) 100%) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
 }
 .bgOrange {
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.05) 100%) !important;
-    border-color: rgba(249, 115, 22, 0.25) !important;
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.4) 0%, rgba(249, 115, 22, 0.15) 100%) !important;
+    border-color: rgba(249, 115, 22, 0.4) !important;
 }
 .bgRed {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%) !important;
-    border-color: rgba(239, 68, 68, 0.25) !important;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.15) 100%) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
 }
 
 .statContent {
@@ -141,18 +154,18 @@
 }
 
 .statLabel {
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .statValue {
-    font-size: 1.5rem;
+    font-size: 2.2rem;
     font-weight: 800;
     color: var(--text-primary);
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 /* ── Charts Container ── */
