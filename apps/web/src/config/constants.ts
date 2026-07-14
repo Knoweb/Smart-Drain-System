@@ -35,5 +35,13 @@ export const STATUS_CLASS_MAP: Record<string, string> = {
 export const STATUS_COLOR_MAP: Record<string, string> = {
     OPERATIONAL: '#22c55e',
     WARNING: '#f59e0b',
-    CRITICAL: '#ef4444',
 }
+
+/** Emails that have full administrative access */
+export const ADMIN_EMAILS: string[] = [
+    'nadeesha@smartdrain.network',
+    'sujeewa.kokawala@gmail.com',
+    'kosala@thesanmark.com',
+    'madushanamudara@gmail.com',
+    'poorni@smartdrain.com'
+]

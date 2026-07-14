@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import styles from './RegisterPage.module.css'
+import { useAuth } from '@/contexts/AuthContext'
 
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconShadow from 'leaflet/dist/images/marker-shadow.png'
@@ -287,9 +288,21 @@ function RegisteredColumn({ title, emoji, color, groups }: {
 // MAIN PAGE
 // =============================================================================
 export default function RegisterPage() {
+    const { isAdmin } = useAuth()
 
     // ── Registered devices list ───────────────────────────────────────────
     const [registeredList, setRegisteredList] = useState<RegisteredDevice[]>([])
+
+    if (!isAdmin) {
+        return (
+            <div className={styles.page}>
+                <div style={{ textAlign: 'center', padding: '4rem 1rem', background: 'var(--surface-card)', borderRadius: '16px' }}>
+                    <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--status-critical)' }}>Access Denied</h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>You do not have administrative privileges to register new devices.</p>
+                </div>
+            </div>
+        )
+    }
 
     useEffect(() => {
         const unsub = onValue(ref(db, 'registered_devices'), snap => {

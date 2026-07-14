@@ -47,7 +47,7 @@ export default function DashboardLayout() {
     const [mobileOpen, setMobileOpen] = useState(false)
     const location = useLocation()
     const navigate = useNavigate()
-    const { user } = useAuth()
+    const { user, isAdmin } = useAuth()
     const headerInfo = PAGE_HEADERS[location.pathname] || { title: 'Smart Drain System', subtitle: '' }
 
     const handleSignOut = async () => {
@@ -87,7 +87,7 @@ export default function DashboardLayout() {
                 </Link>
 
                 <nav className={styles.nav}>
-                    {NAV_ITEMS.map(({ to, icon, label }) => (
+                    {NAV_ITEMS.filter(item => item.to !== '/register' || isAdmin).map(({ to, icon, label }) => (
                         <NavLink
                             key={to}
                             to={to}

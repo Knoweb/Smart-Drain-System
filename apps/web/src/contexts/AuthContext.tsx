@@ -11,14 +11,17 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth'
 import { auth } from '../lib/firebase'
+import { ADMIN_EMAILS } from '../config/constants'
 
 interface AuthContextType {
   user: User | null
+  isAdmin: boolean
   isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  isAdmin: false,
   isLoading: true,
 })
 
@@ -37,8 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe()
   }, [])
 
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false
+
   return (
-    <AuthContext.Provider value={{ user, isLoading }}>
+    <AuthContext.Provider value={{ user, isAdmin, isLoading }}>
       {children}
     </AuthContext.Provider>
   )

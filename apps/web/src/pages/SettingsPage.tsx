@@ -4,6 +4,7 @@ import { db } from '@/lib/firebase'
 import styles from './SettingsPage.module.css'
 import pageStyles from './Page.module.css'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface SmsContact {
     name: string;
@@ -56,6 +57,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 export default function SettingsPage() {
     const { theme, toggleTheme } = useTheme()
+    const { isAdmin } = useAuth()
     const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
     const [deviceConfigs, setDeviceConfigs] = useState<DeviceConfig[]>([])
     const [loading, setLoading] = useState(true)
@@ -184,8 +186,12 @@ export default function SettingsPage() {
 
     return (
         <div className={pageStyles.page}>
-
-            <div className={styles.settingsGrid}>
+            {!isAdmin && (
+                <div style={{ marginBottom: '20px', padding: '12px 20px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 500 }}>
+                    ⚠️ View-Only Mode: You do not have administrative privileges to modify settings.
+                </div>
+            )}
+            <div className={styles.settingsGrid} style={{ pointerEvents: isAdmin ? 'auto' : 'none', opacity: isAdmin ? 1 : 0.8 }}>
                 {/* Theme Setting */}
                 <div className={styles.settingCard}>
                     <div className={styles.settingInfo}>
@@ -373,6 +379,7 @@ export default function SettingsPage() {
 
             {/* Bottom Action Bar */}
             <div style={{ marginTop: '0px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                {isAdmin && (
                 <button
                     onClick={handleSave}
                     disabled={saving}
@@ -385,13 +392,13 @@ export default function SettingsPage() {
                         fontWeight: 600,
                         cursor: 'pointer',
                         boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
-                        transition: 'transform 0.2s, box-shadow 0.2s'
                     }}
                     onMouseOver={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
                     onMouseOut={e => (e.currentTarget.style.transform = 'none')}
                 >
                     {saving ? 'Saving...' : 'Save Settings'}
                 </button>
+                )}
             </div>
 
             {/* MUI-style Toast Notification */}
