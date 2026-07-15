@@ -37,18 +37,7 @@ function generateAlerts(readings: SensorReading[], thresholds: AppSettings['thre
 
     // ── Drain Sensor Alerts ──────────────────────────────────────────────
     if (reading.device_type === 'drain_sensor') {
-      if (reading.water_level_pct >= thresholds.water_critical) {
-        alerts.push({
-          id: `${reading.id}-water-crit`,
-          device_id: reading.device_id,
-          reading_id: reading.id,
-          alert_type: 'HIGH_WATER_LEVEL',
-          message: `CRITICAL: Water level at ${reading.water_level_pct.toFixed(0)}% — above ${thresholds.water_critical}% critical threshold`,
-          is_resolved: false,
-          created_at: reading.recorded_at,
-          iot_devices: { name: deviceName, drains: { name: drainName }, device_type: 'drain_sensor' },
-        })
-      } else if (reading.water_level_pct >= thresholds.water_warning) {
+      if (reading.water_level_pct >= thresholds.water_warning) {
         alerts.push({
           id: `${reading.id}-water-warn`,
           device_id: reading.device_id,

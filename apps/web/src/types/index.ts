@@ -24,7 +24,7 @@
  *     timestamp:         number   Unix milliseconds
  */
 
-export type DrainStatus = 'OPERATIONAL' | 'WARNING' | 'CRITICAL'
+export type DrainStatus = 'OPERATIONAL' | 'WARNING'
 export type DeviceType = 'drain_sensor' | 'mesh_bucket'
 
 /** A single raw record as stored in Firebase RTDB */

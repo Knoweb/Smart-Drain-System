@@ -94,10 +94,9 @@ export function deriveStatus(
   level: number,
   battery: number | null,
   deviceType: DeviceType,
-  thresholds: { water_warning: number, water_critical: number, mesh_warning: number, battery_low: number }
+  thresholds: { water_warning: number, mesh_warning: number, battery_low: number }
 ): DrainStatus {
   if (deviceType === 'drain_sensor') {
-    if (level >= thresholds.water_critical) return 'CRITICAL'
     if (level >= thresholds.water_warning) return 'WARNING'
   } else if (deviceType === 'mesh_bucket') {
     // Mesh buckets only have a warning threshold for now
@@ -117,7 +116,7 @@ export function deriveStatus(
  */
 export function buildDrains(
   readings: SensorReading[],
-  thresholds: { water_warning: number, water_critical: number, mesh_warning: number, battery_low: number }
+  thresholds: { water_warning: number, mesh_warning: number, battery_low: number }
 ): Drain[] {
   // Group readings by device_id (drain)
   const deviceMap = new Map<string, SensorReading[]>()

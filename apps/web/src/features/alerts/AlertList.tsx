@@ -56,14 +56,10 @@ function AlertCard({ alert, onResolve }: { alert: Alert; onResolve: () => void }
     const isHighMesh = alert.alert_type === 'HIGH_MESH_LEVEL'
     const isLowBattery = alert.alert_type === 'LOW_BATTERY'
 
-    // If resolved, it's grayed out. Otherwise, Red for water/mesh, Amber for battery.
+    // If resolved, it's grayed out. Otherwise, everything is Warning.
     const themeClass = isResolved
         ? styles.resolved
-        : (isHighWater || isHighMesh)
-            ? styles.critical
-            : isLowBattery
-                ? styles.warning
-                : styles.default
+        : styles.warning
 
     const icon = isHighWater ? '🌊' : isHighMesh ? '🗑️' : isLowBattery ? '🔋' : '⚠️'
     // Extract linked device and drain details

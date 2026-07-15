@@ -21,7 +21,6 @@ export interface DeviceConfig {
 interface AppSettings {
     thresholds: {
         water_warning: number
-        water_critical: number
         mesh_warning: number
         battery_low: number
         stored_numbers?: string
@@ -37,7 +36,6 @@ interface AppSettings {
 const DEFAULT_SETTINGS: AppSettings = {
     thresholds: {
         water_warning: 70,
-        water_critical: 85,
         mesh_warning: 70,
         battery_low: 20
     },
@@ -192,39 +190,14 @@ export default function SettingsPage() {
                 </div>
             )}
             <div className={styles.settingsGrid} style={{ pointerEvents: isAdmin ? 'auto' : 'none', opacity: isAdmin ? 1 : 0.8 }}>
-                {/* Theme Setting */}
-                <div className={styles.settingCard}>
-                    <div className={styles.settingInfo}>
-                        <h3 className={styles.settingTitle}>Appearance Options</h3>
-                        <p className={styles.settingDesc}>
-                            Toggle between light and dark modes. Dark mode is recommended for monitoring dashboards.
-                        </p>
-                    </div>
 
-                    <div className={styles.settingAction}>
-                        <label className={styles.toggleWrapper}>
-                            <input
-                                type="checkbox"
-                                className={styles.toggleInput}
-                                checked={theme === 'light'}
-                                onChange={toggleTheme}
-                            />
-                            <div className={styles.toggleTrack}>
-                                <div className={styles.toggleThumb} />
-                                <span className={styles.toggleLabel}>
-                                    {theme === 'light' ? '☀️ Light' : '🌙 Dark'}
-                                </span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
 
                 {/* Alert Thresholds */}
                 <div className={styles.settingCard}>
                     <div className={styles.settingInfo}>
                         <h3 className={styles.settingTitle}>Global Alert Thresholds</h3>
                         <p className={styles.settingDesc}>
-                            Set the global trigger percentages for Warning and Critical alerts.
+                            Set the global trigger percentages for Warning alerts.
                         </p>
                     </div>
                     <div className={styles.settingAction} style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start' }}>
@@ -232,10 +205,7 @@ export default function SettingsPage() {
                             <label style={{ width: '140px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Water Warning %:</label>
                             <input type="number" value={settings.thresholds.water_warning} onChange={e => updateThreshold('water_warning', e.target.value)} style={{ width: '60px', padding: '6px', borderRadius: '4px', border: '1px solid var(--surface-border)', background: 'var(--surface-background)', color: 'var(--text-primary)' }} />
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <label style={{ width: '140px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Water Critical %:</label>
-                            <input type="number" value={settings.thresholds.water_critical} onChange={e => updateThreshold('water_critical', e.target.value)} style={{ width: '60px', padding: '6px', borderRadius: '4px', border: '1px solid var(--surface-border)', background: 'var(--surface-background)', color: 'var(--text-primary)' }} />
-                        </div>
+
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <label style={{ width: '140px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Garbage Warning %:</label>
                             <input type="number" value={settings.thresholds.mesh_warning} onChange={e => updateThreshold('mesh_warning', e.target.value)} style={{ width: '60px', padding: '6px', borderRadius: '4px', border: '1px solid var(--surface-border)', background: 'var(--surface-background)', color: 'var(--text-primary)' }} />
@@ -333,14 +303,13 @@ export default function SettingsPage() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
                         {/* WhatsApp Group Auto-post */}
                         <div style={{ width: '100%', background: 'rgba(37, 211, 102, 0.05)', padding: '24px', borderRadius: '12px', border: '1px solid rgba(37, 211, 102, 0.2)' }}>
                             <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-primary)' }}>
                                 <span style={{ color: '#25D366', fontSize: '1.4rem' }}>💬</span> WhatsApp Auto-Notification
                             </h4>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-                                Automatically post critical alerts to the community WhatsApp group.
+                                Automatically post warning alerts to the community WhatsApp group.
                             </p>
 
                             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
@@ -355,24 +324,7 @@ export default function SettingsPage() {
                                 />
                                 <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>Enable WhatsApp Auto-Posting</span>
                             </label>
-
-                            {settings.notifications.whatsapp_group_enabled && (
-                                <div style={{ marginTop: '16px' }}>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px' }}>WhatsApp Group Invite Link:</label>
-                                    <input
-                                        type="text"
-                                        value={settings.notifications.whatsapp_group_id}
-                                        onChange={e => setSettings(s => ({
-                                            ...s,
-                                            notifications: { ...s.notifications, whatsapp_group_id: e.target.value }
-                                        }))}
-                                        placeholder="https://chat.whatsapp.com/..."
-                                        style={{ width: '100%', maxWidth: '500px', padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--surface-border)', background: 'var(--surface-card)', fontSize: '0.9rem', color: 'var(--text-primary)' }}
-                                    />
-                                </div>
-                            )}
                         </div>
-
                     </div>
                 </div>
             </div>

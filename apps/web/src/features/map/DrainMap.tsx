@@ -66,7 +66,6 @@ export function DrainMap() {
             <div className={styles.legend}>
                 <LegendItem color="#22c55e" label="Operational" />
                 <LegendItem color="#f59e0b" label="Warning" />
-                <LegendItem color="#ef4444" label="Critical" />
             </div>
 
             {/* ── Drain count badge ── */}

@@ -18,11 +18,10 @@ interface Props {
     drains: Drain[]
 }
 
-const STATUS_ORDER: DrainStatus[] = ['OPERATIONAL', 'WARNING', 'CRITICAL']
+const STATUS_ORDER: DrainStatus[] = ['OPERATIONAL', 'WARNING']
 const STATUS_LABELS: Record<DrainStatus, string> = {
     OPERATIONAL: 'Operational',
-    WARNING: 'Warning',
-    CRITICAL: 'Critical',
+    WARNING: 'Warning'
 }
 
 // Custom tooltip card

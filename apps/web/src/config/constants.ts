@@ -28,7 +28,6 @@ export const POLLING_INTERVAL_MS = 30_000  // 30 seconds
 export const STATUS_CLASS_MAP: Record<string, string> = {
     OPERATIONAL: 'status-operational',
     WARNING: 'status-warning',
-    CRITICAL: 'status-critical',
 }
 
 /** Status to color value — used by Recharts and map markers */

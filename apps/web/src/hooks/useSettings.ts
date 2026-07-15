@@ -11,7 +11,6 @@ export interface SmsContact {
 export interface AppSettings {
     thresholds: {
         water_warning: number
-        water_critical: number
         mesh_warning: number
         battery_low: number
     }
@@ -25,7 +24,6 @@ export interface AppSettings {
 export const DEFAULT_SETTINGS: AppSettings = {
     thresholds: {
         water_warning: 70,
-        water_critical: 85,
         mesh_warning: 70,
         battery_low: 20
     },
@@ -38,7 +36,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
             { name: 'Chanaka Mahabandara, PHI- Kolonnawa UC', phone: '0716295127', type: 'Bin fill levels and Water flow levels' },
             { name: 'Priyanga-Director Atomic Energy Board', phone: '0763719770', type: "Water flow levels, if there's an emergency" },
         ],
-        whatsapp_group_enabled: false,
+        whatsapp_group_enabled: true,
         whatsapp_group_id: ''
     }
 }
