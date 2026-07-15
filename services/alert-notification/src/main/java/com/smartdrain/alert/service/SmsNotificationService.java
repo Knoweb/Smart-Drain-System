@@ -53,4 +53,9 @@ public class SmsNotificationService implements NotificationService {
         }
         System.out.println("========================");
     }
+
+    @Override
+    public void sendMeshWarningAlert(TelemetryPayload payload, Settings settings) {
+        // Disabled as per user request
+    }
 }

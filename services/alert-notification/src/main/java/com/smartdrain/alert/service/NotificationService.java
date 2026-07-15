@@ -6,4 +6,5 @@ import com.smartdrain.alert.model.Settings;
 public interface NotificationService {
     void sendHighWaterLevelAlert(TelemetryPayload payload, Settings settings, boolean isCritical);
     void sendLowBatteryAlert(TelemetryPayload payload, Settings settings);
+    void sendMeshWarningAlert(TelemetryPayload payload, Settings settings);
 }

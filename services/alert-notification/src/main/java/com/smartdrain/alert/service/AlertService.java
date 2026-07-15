@@ -58,5 +58,11 @@ public class AlertService {
             System.out.println("LOW battery detected. Triggering alerts...");
             notificationServices.forEach(service -> service.sendLowBatteryAlert(payload, settings));
         }
+
+        // Garbage Bin / Mesh Level check
+        if (payload.getMeshLevelPct() != null && payload.getMeshLevelPct() >= settings.getThresholds().getMesh_warning()) {
+            System.out.println("HIGH garbage level detected. Triggering alerts...");
+            notificationServices.forEach(service -> service.sendMeshWarningAlert(payload, settings));
+        }
     }
 }

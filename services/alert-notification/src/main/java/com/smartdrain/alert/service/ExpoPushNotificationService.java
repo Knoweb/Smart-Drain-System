@@ -38,6 +38,11 @@ public class ExpoPushNotificationService implements NotificationService {
             "🔋 Battery level at " + payload.getDrainName() + " is " + payload.getBatteryLevelPct() + "%");
     }
 
+    @Override
+    public void sendMeshWarningAlert(TelemetryPayload payload, Settings settings) {
+        // Disabled as per user request
+    }
+
     private void sendPushNotification(String token, String title, String body) {
         Map<String, Object> message = new HashMap<>();
         message.put("to", token);

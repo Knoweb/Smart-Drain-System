@@ -7,6 +7,7 @@ public class TelemetryPayload {
     private String drainId;
     private String drainName;
     private double waterLevelPct;
+    private Double meshLevelPct;
     private Double waterPressurePsi;
     private Double temperatureC;
     private Integer batteryLevelPct;

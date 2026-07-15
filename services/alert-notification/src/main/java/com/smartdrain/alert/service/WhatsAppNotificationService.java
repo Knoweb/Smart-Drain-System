@@ -14,10 +14,10 @@ import java.util.Map;
 @Service
 public class WhatsAppNotificationService implements NotificationService {
 
-    private final String ID_INSTANCE = "710722679422";
-    private final String API_TOKEN_INSTANCE = "76f0f5c757764d85a62a7c2a5c0d0f7ec0c79678f8734328ac";
+    private final String ID_INSTANCE = "710722682516";
+    private final String API_TOKEN_INSTANCE = "5ad1117ebeba4d0aab69e23dc4e9705ddf06af0368b5462891";
     // Group ID discovered from Green API contacts list
-    private final String SMART_DRAIN_GROUP_ID = "120363427525607393@g.us"; 
+    private final String SMART_DRAIN_GROUP_ID = "120363429365188401@g.us"; 
 
     private void sendGreenApiMessage(String message) {
         try {
@@ -44,7 +44,7 @@ public class WhatsAppNotificationService implements NotificationService {
         if (settings == null || settings.getNotifications() == null) {
             return;
         }
-
+        
         if (!settings.getNotifications().isWhatsapp_group_enabled()) {
             return;
         }
@@ -65,13 +65,31 @@ public class WhatsAppNotificationService implements NotificationService {
         if (settings == null || settings.getNotifications() == null) {
             return;
         }
-
+        
         if (!settings.getNotifications().isWhatsapp_group_enabled()) {
             return;
         }
-
         String message = String.format("🔋 *Smart Drain Maintenance*\n\n📍 Location: %s\n🔋 Battery Level: %.1f%%\n\nMaintenance team has been notified.",
             payload.getDrainName(), payload.getBatteryLevelPct());
+
+        System.out.println("=== WHATSAPP COMMUNITY AUTO-POST ===");
+        System.out.println("Message: \n" + message);
+        sendGreenApiMessage(message);
+        System.out.println("====================================");
+    }
+
+    @Override
+    public void sendMeshWarningAlert(TelemetryPayload payload, Settings settings) {
+        if (settings == null || settings.getNotifications() == null) {
+            return;
+        }
+        
+        if (!settings.getNotifications().isWhatsapp_group_enabled()) {
+            return;
+        }
+        
+        String message = String.format("🗑️ *Garbage Level Warning*\n\n📍 Location: %s\n🗑️ Mesh Bin Level: %.1f%%\n\nPlease arrange for cleaning.",
+            payload.getDrainName(), payload.getMeshLevelPct() != null ? payload.getMeshLevelPct() : 0.0);
 
         System.out.println("=== WHATSAPP COMMUNITY AUTO-POST ===");
         System.out.println("Message: \n" + message);

@@ -51,4 +51,9 @@ public class EmailNotificationService implements NotificationService {
             System.err.println("Failed to send email to " + payload.getUserEmail() + ": " + e.getMessage());
         }
     }
+
+    @Override
+    public void sendMeshWarningAlert(TelemetryPayload payload, Settings settings) {
+        // Disabled as per user request
+    }
 }
