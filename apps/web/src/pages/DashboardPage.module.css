@@ -168,23 +168,28 @@
     margin-top: 4px;
 }
 
-/* ── Charts Container ── */
-.chartsContainer {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+/* ── Dashboard Grid ── */
+.dashboardGrid {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: var(--space-6);
 }
 
-/* ── Middle Row: Charts & Alerts ── */
-.middleRow {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
+.chartsCol {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.sidebarCol {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-6);
 }
 
 @media (max-width: 1024px) {
-    .middleRow { 
-        display: contents; 
+    .dashboardGrid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -231,12 +236,6 @@
 .chartSubtitle {
     font-size: 0.85rem;
     color: var(--text-muted);
-}
-
-.alertsCol {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
 }
 
 .alertCard {
@@ -286,7 +285,7 @@
 }
 
 .alertTitle {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 2px;
@@ -298,38 +297,23 @@
 }
 
 .alertValue {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     font-weight: 800;
     color: #ef4444;
 }
 
 .alertValue.warning { color: #f59e0b; }
 
-/* ── Bottom Row ── */
-.bottomRow {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: var(--space-6);
-}
-
-@media (max-width: 1024px) {
-    .bottomRow { 
-        display: contents; 
-    }
-}
-
 /* ── Charts Container for Mobile Reordering ── */
 @media (max-width: 1024px) {
-    .chartsContainer {
+    .dashboardGrid {
         display: flex;
         flex-direction: column;
         gap: var(--space-6);
     }
     
-    .waterChartWrapper { order: 1; }
-    .garbageChartWrapper { order: 2; }
-    .alertsCol { order: 3; }
-    .insightsWrapper { order: 4; }
+    .chartsCol { order: 1; }
+    .sidebarCol { order: 2; }
 }
 
 .pieCard {
@@ -371,6 +355,7 @@
     display: flex;
     flex-direction: column;
     min-height: 250px;
+    flex: 1;
 }
 
 .insightsHeader {

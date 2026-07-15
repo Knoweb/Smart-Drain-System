@@ -117,14 +117,12 @@ export default function DashboardPage() {
 
     const statusColorMap: Record<string, string> = {
         'OPERATIONAL': '#10b981',
-        'WARNING': '#f97316',
-        'CRITICAL': '#ef4444'
+        'WARNING': '#f97316'
     };
 
     const statusClassMap: Record<string, string> = {
         'OPERATIONAL': styles.emerald,
-        'WARNING': styles.orange,
-        'CRITICAL': styles.red
+        'WARNING': styles.orange
     };
 
     const primaryStatusColor = primaryDrain ? (statusColorMap[primaryDrain.status] ?? '#10b981') : '#10b981';
@@ -132,8 +130,7 @@ export default function DashboardPage() {
 
     const statusBgClassMap: Record<string, string> = {
         'OPERATIONAL': styles.bgEmerald,
-        'WARNING': styles.bgOrange,
-        'CRITICAL': styles.bgRed
+        'WARNING': styles.bgOrange
     };
     const primaryBgClass = primaryDrain ? (statusBgClassMap[primaryDrain.status] ?? styles.bgEmerald) : styles.bgEmerald;
 
@@ -204,29 +201,49 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* CHARTS CONTAINER (allows reordering on mobile) */}
-                    <div className={styles.chartsContainer}>
-                        {/* MIDDLE ROW: Water Chart & Alerts Col */}
-                        <div className={styles.middleRow}>
+                    {/* DASHBOARD GRID (allows reordering on mobile) */}
+                    <div className={styles.dashboardGrid}>
+                        {/* LEFT COLUMN: Charts */}
+                        <div className={styles.chartsCol}>
                             <div className={`${styles.chartCard} ${styles.waterChartWrapper}`} style={{ cursor: 'default' }}>
-                            <div className={styles.chartCardHeader}>
-                                <div>
-                                    <h3 className={styles.chartTitle}>Water Level Statistics</h3>
-                                    <span className={styles.chartSubtitle}>{smartDrain?.name}</span>
+                                <div className={styles.chartCardHeader}>
+                                    <div>
+                                        <h3 className={styles.chartTitle}>Water Level Statistics</h3>
+                                        <span className={styles.chartSubtitle}>{smartDrain?.name}</span>
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minHeight: '300px' }}>
+                                    <WaterLevelTrendChart
+                                        readings={smartDrain ? readings.filter(r => r.sub_id === smartDrain.id) : []}
+                                        loading={readingsLoading}
+                                        alertThreshold={settings.thresholds.water_warning}
+                                        metricKey="water_level_pct"
+                                        title=""
+                                    />
                                 </div>
                             </div>
-                            <div style={{ flex: 1, minHeight: '300px' }}>
-                                <WaterLevelTrendChart
-                                    readings={smartDrain ? readings.filter(r => r.sub_id === smartDrain.id) : []}
-                                    loading={readingsLoading}
-                                    alertThreshold={settings.thresholds.water_warning}
-                                    metricKey="water_level_pct"
-                                    title=""
-                                />
+
+                            <div className={`${styles.chartCard} ${styles.garbageChartWrapper}`} style={{ cursor: 'default' }} id="garbage-chart">
+                                <div className={styles.chartCardHeader}>
+                                    <div>
+                                        <h3 className={styles.chartTitle}>Garbage Level Statistics</h3>
+                                        <span className={styles.chartSubtitle}>{meshBucket?.name}</span>
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1, minHeight: '300px' }}>
+                                    <WaterLevelTrendChart
+                                        readings={meshBucket ? readings.filter(r => r.sub_id === meshBucket.id) : []}
+                                        loading={readingsLoading}
+                                        alertThreshold={settings.thresholds.mesh_warning}
+                                        metricKey="water_level_pct"
+                                        title=""
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className={styles.alertsCol}>
+                        {/* RIGHT COLUMN: Alerts & Insights */}
+                        <div className={styles.sidebarCol}>
                             <div className={styles.alertCard} onClick={() => navigate('/alerts')}>
                                 <div className={styles.alertIcon}>🚨</div>
                                 <div className={styles.alertContent}>
@@ -244,31 +261,9 @@ export default function DashboardPage() {
                                 </div>
                                 <div className={`${styles.alertValue} ${styles.warning}`}>{settings.thresholds.mesh_warning}%</div>
                             </div>
-                            
-                            </div>
-                        </div>
-                        {/* BOTTOM ROW: Garbage Chart and Video */}
-                        <div className={`${styles.bottomRow} ${styles.garbageRow}`} id="garbage-chart">
-                            <div className={`${styles.chartCard} ${styles.garbageChartWrapper}`} style={{ cursor: 'default' }}>
-                            <div className={styles.chartCardHeader}>
-                                <div>
-                                    <h3 className={styles.chartTitle}>Garbage Level Statistics</h3>
-                                    <span className={styles.chartSubtitle}>{meshBucket?.name}</span>
-                                </div>
-                            </div>
-                            <div style={{ flex: 1, minHeight: '300px' }}>
-                                <WaterLevelTrendChart
-                                    readings={meshBucket ? readings.filter(r => r.sub_id === meshBucket.id) : []}
-                                    loading={readingsLoading}
-                                    alertThreshold={settings.thresholds.mesh_warning}
-                                    metricKey="water_level_pct"
-                                    title=""
-                                />
-                            </div>
-                        </div>
 
-                        {/* SMART INSIGHTS (Side Column) */}
-                        <div className={styles.insightsWrapper}>
+                            {/* SMART INSIGHTS */}
+                            <div className={styles.insightsWrapper}>
                             <div className={styles.insightsHeader}>
                                 <div className={styles.insightsIconWrapper}>
                                     <span className={styles.insightsIcon}>🌤️</span>
@@ -288,7 +283,7 @@ export default function DashboardPage() {
                                 <div className={styles.insightBox}>
                                     <span className={styles.insightBoxIcon}>💧</span>
                                     <div className={styles.insightBoxText}>
-                                        <strong style={{ color: isWaterHigh ? 'var(--color-critical)' : 'inherit' }}>{flowInsightTitle}</strong>
+                                        <strong style={{ color: isWaterHigh ? 'var(--color-warning)' : 'inherit' }}>{flowInsightTitle}</strong>
                                         <span>{flowInsightText}</span>
                                     </div>
                                 </div>
@@ -300,6 +295,12 @@ export default function DashboardPage() {
                                         <span>{batteryInsightText}</span>
                                     </div>
                                 </div>
+                                </div>
+
+                                {/* System Status Footer to fill space */}
+                                <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px dashed rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }}></div>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>System operating optimally</span>
                                 </div>
                             </div>
                         </div>
