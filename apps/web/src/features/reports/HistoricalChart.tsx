@@ -152,9 +152,7 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId, alertT
     }
 
     // Adaptive tick count based on data density
-    const tickInterval = data.length <= 24 ? 0
-        : data.length <= 96 ? Math.floor(data.length / 24)
-            : Math.floor(data.length / 12)
+    // Let Recharts handle overlapping automatically
 
     return (
         <div className={styles.container}>
@@ -171,8 +169,10 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId, alertT
                 </div>
             </div>
 
-            <ResponsiveContainer width="100%" height={320}>
-                <ComposedChart data={data} margin={{ top: 8, right: 48, left: 0, bottom: 0 }}>
+            <div className={styles.chartScrollWrapper}>
+                <div className={styles.chartScrollInner}>
+                    <ResponsiveContainer width="100%" height={320}>
+                        <ComposedChart data={data} margin={{ top: 8, right: 48, left: 0, bottom: 0 }}>
                     <defs>
                         <linearGradient id="waterGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%"  stopColor="#3b82f6" stopOpacity={0.25} />
@@ -192,7 +192,7 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId, alertT
                         tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                         axisLine={{ stroke: 'var(--surface-border)' }}
                         tickLine={false}
-                        interval={tickInterval}
+                        minTickGap={25}
                     />
 
                     {/* ── Y Axis left: % values ── */}
@@ -294,5 +294,7 @@ export function HistoricalChart({ readings, loading, timeRange, deviceId, alertT
                 </ComposedChart>
             </ResponsiveContainer>
         </div>
+    </div>
+</div>
     )
 }

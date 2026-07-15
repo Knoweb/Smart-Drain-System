@@ -524,4 +524,7 @@
     .pageRoot {
         padding: 0;
     }
+    .listColumns {
+        grid-template-columns: 1fr;
+    }
 }

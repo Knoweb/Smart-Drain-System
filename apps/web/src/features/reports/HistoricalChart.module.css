@@ -138,3 +138,22 @@
     font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
+
+/* ── Chart Scrolling (Mobile) ── */
+.chartScrollWrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px; /* For scrollbar */
+}
+
+.chartScrollInner {
+    min-width: 650px; /* Forces scroll on small screens */
+}
+
+@media (min-width: 768px) {
+    .chartScrollInner {
+        min-width: 100%;
+    }
+}
